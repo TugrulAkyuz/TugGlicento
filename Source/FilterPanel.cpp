@@ -28,6 +28,7 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     addAndMakeVisible(sustainSlider);
     addAndMakeVisible(releaseSlider);
     addAndMakeVisible(envSlider);
+    addAndMakeVisible(filterTypeCombo);
     
     addAndMakeVisible(freqResPanel);
     addAndMakeVisible(curvePanel);
@@ -39,6 +40,18 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    
+    cutofSlider.setSkewFactor(4);
+    int i= 1;
+   for(auto s: filterChoicesStr)
+   {
+       filterTypeCombo.addItem(s,i);
+       i++;
+   }
+    filterTypeCombo.onChange = [this]()
+    {
+        audioProcessor.setFilterType(filterTypeCombo.getSelectedItemIndex(),myLine);
+    };
     
     juce::String  tmp_s;
     tmp_s.clear();
@@ -67,6 +80,27 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     tmp_s << valueTreeNames[RELEASENAME]<<myLine;
     releaseAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, releaseSlider);
 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[ENVNAME]<<myLine;
+    envAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, envSlider);
+    
+    tmp_s.clear();
+    tmp_s << valueTreeNames[FILTERTYPE]<<myLine;
+    fTypeAttachment =  std::make_unique <AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.valueTreeState, tmp_s, filterTypeCombo);
+    
+    const auto& params = audioProcessor.getParameters();
+
+    
+    for( auto param : params )
+    {
+        auto x = param->getName(1000);
+        if(x ==  String (valueTreeNames[ATTACKNAME] + String(line_no))
+           || x ==  String (valueTreeNames[DECAYNAME] + String(line_no))
+           || x ==  String (valueTreeNames[SUSTAINNAME] + String(line_no))
+           || x ==  String (valueTreeNames[RELEASENAME] + String(line_no)))
+            param->addListener(this);
+    }
+
     
 }
 
@@ -90,10 +124,6 @@ void  FilterPanel::paint (juce::Graphics& g)
     //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
 
-
-
-
-
 void FilterPanel::resized()
 {
     auto allArea =  getLocalBounds();
@@ -115,10 +145,11 @@ void FilterPanel::resized()
     releaseSlider.setBounds(area);
     area = allArea.removeFromTop( h);
     envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    
+    filterTypeCombo.setBounds(area);
     
     freqResPanel.setBounds(right.removeFromTop(2*h));
     curvePanel.setBounds(right);
+
     
 }
 
@@ -169,13 +200,17 @@ void  FreqResPanel::paint (juce::Graphics& g)
     
     std::vector <double> mags;
     mags.resize(w);
+   // int ftype  =  audioProcessor.myFilter[0][myLine].getFilterMode2();
     for(int i = 0 ; i < w ;i++)
     {
       
         auto freq =  mapToLog10(double(i) / double(w) , 20.0,20000.0 );
         
-        double mag = audioProcessor.bandpassfilter[myLine].state->getMagnitudeForFrequency(freq, sampleRate);
+        //double mag = audioProcessor.bandpassfilter[myLine].state->getMagnitudeForFrequency(freq, sampleRate);
+        
+        double mag = audioProcessor.myFilter[0][myLine].getFreqResponce(freq);
         mags[i] = Decibels::gainToDecibels(mag);
+        //mags[i] = log10(mag);
        
     }
     double outMin = responseArea.getBottom();
@@ -188,6 +223,7 @@ void  FreqResPanel::paint (juce::Graphics& g)
     auto map = [outMin,outMMax](double input)
     {
         return jmap(input, -24.0, 24.0,outMin,outMMax);
+        
     };
     double m =  map(mags[0]);
     if(m < outMin)
@@ -200,15 +236,13 @@ void  FreqResPanel::paint (juce::Graphics& g)
         freqResponse.lineTo(responseArea.getX() + i,m);
     }
     freqResponse.lineTo(juce::Point<float>(getWidth()+10, getHeight()));
-    
     g.strokePath(freqResponse, PathStrokeType(2.0f));
     Colour colour;
     colour = Colours::yellow.withAlpha(0.10f);
     DropShadow ds(colour, 1, {0, 1});
     ds.drawForPath(g, freqResponse);
         
-   
-       
+
 }
 
 void FreqResPanel::resized()

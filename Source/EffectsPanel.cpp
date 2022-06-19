@@ -161,11 +161,7 @@ void EffectPanel::resized()
               
           }
         
-//        pitchShifterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-//        if(audioProcessor.selectedEffect[selectedlineFilterPanel] == DISTORTION)
-//            distortionPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-//        if(audioProcessor.selectedEffect[selectedlineFilterPanel] == PHASER)
-//           phaserPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
+
        
         
     }

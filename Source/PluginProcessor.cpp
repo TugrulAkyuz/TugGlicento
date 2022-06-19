@@ -80,32 +80,39 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[Q] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.01,1.0,0.2));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.01,0.99,0.2));
         qAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
     
         
         tmp_s.clear();
         tmp_s << valueTreeNames[ATTACKNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.1,5,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,5,0.001));
         attackAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DECAYNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.1,5,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.01,5,1));
         decayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[SUSTAINNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.1,5,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,1,0.9f));
         sustainAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[RELEASENAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.1,5,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.1,5,0.1));
         releaseAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
+        tmp_s.clear();
+        tmp_s << valueTreeNames[ENVNAME] << j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,0.9,0.1));
+        envAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
-        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[FILTERTYPE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,filterChoicesStr,1));
+        filterTypeAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
     }
     
@@ -246,6 +253,8 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         filter_coeff[i].q = 0.5;
         *bandpassfilter[i].state = *dsp::IIR::Coefficients<float>::makeBandPass(mySampleRate,  filter_coeff[i].freq,filter_coeff[i].q);
         
+        adsr[i].setSampleRate(sampleRate);
+        
     }
     
     waveshape.prepare(spec);
@@ -315,6 +324,12 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         filter_coeff[i].freq = *cutOffAtomic[i];
         filter_coeff[i].q =  *qAtomic[i];
         *bandpassfilter[i].state = *dsp::IIR::Coefficients<float>::makeBandPass(mySampleRate,  filter_coeff[i].freq,filter_coeff[i].q);
+        myFilter[0][i].setCutoff(*cutOffAtomic[i]/20000);
+        myFilter[0][i].setResonance(*qAtomic[i]);
+        myFilter[1][i].setCutoff(*cutOffAtomic[i]/20000);
+        myFilter[1][i].setResonance(*qAtomic[i]);
+        
+        
     }
     
     juce::AudioPlayHead::CurrentPositionInfo positionInfo;
@@ -407,6 +422,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 stepmidStopSampleCounter[i] = -1;
                 effectState[i] = false;
                 lineGainSmooth[i].setTargetValue(0.0f);
+                adsr[i].noteOff();
             }
             if(stpSample[i] == 0)
             {
@@ -419,6 +435,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                     stepmidStopSampleCounter[i] = 1;
                     effectState[i] = true;
                     lineGainSmooth[i].setTargetValue(1.0f);
+                    adsr[i].noteOn();
                 }
                 
             }
@@ -573,12 +590,44 @@ void TugGlicentoAudioProcessor::processBlockFilter (juce::AudioBuffer<float>& bu
 {
     DBG("processBlockFilter");
  
-
-
-    dsp::AudioBlock<float> output (copyBuffer[line_no]);
+    int channel = 0;
+    double main_freq = *cutOffAtomic[line_no]/20000;
+    myFilter[0][line_no].setCutoff(main_freq);
+    myFilter[1][line_no].setCutoff(main_freq);
     
-    bandpassfilter[line_no].process(dsp::ProcessContextReplacing<float>(output));
+    auto chan0Write = copyBuffer[line_no].getWritePointer(0);
+    auto chan1Write = copyBuffer[line_no].getWritePointer(1);
+    for (auto i = 0; i < copyBuffer[line_no].getNumSamples(); ++i)
+    {
+        double freq = *envAtomic[line_no]*adsr[line_no].getNextSample();
+        myFilter[channel][line_no].setCutoffMod(freq);
+        *chan0Write = myFilter[0][line_no].process(*chan0Write);
+        *chan1Write = myFilter[1][line_no].process(*chan1Write);
+        chan0Write++;
+        chan1Write++;
+    }
     
-    //waveshape.process(dsp::ProcessContextReplacing<float>(output));
+    
+//     for (auto i = 0; i < copyBuffer[line_no].getNumSamples(); ++i)
+//    {
+//
+//        double freq = *envAtomic[line_no]*adsr[line_no].getNextSample();
+//
+//        for(int channel = 0 ; channel < 2 ; channel++ )
+//        {
+//            copyBuffer[line_no].getSample(channel, i);
+//            myFilter[channel][line_no].setCutoffMod(freq);
+//            double sample = copyBuffer[line_no].getSample(channel, i);
+//            sample  = myFilter[channel][line_no].process(sample);
+//            copyBuffer[line_no].setSample(channel, i , sample);
+//        }
+//
+//    }
+
+//    dsp::AudioBlock<float> output (copyBuffer[line_no]);
+//    bandpassfilter[line_no].process(dsp::ProcessContextReplacing<float>(output));
+//    adsr[line_no].applyEnvelopeToBuffer(copyBuffer[line_no], 0, copyBuffer[line_no].getNumSamples());
+    
+
 }
 

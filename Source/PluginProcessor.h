@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "MoogFilter.h"
 using namespace juce;
 #define numOfStep  32
 #define numOfLine  5
@@ -36,7 +37,7 @@ const StringArray myNotetUnitSA  = { "1nd","1n", "1nt",
 
 enum valueTreeNamesEnum
 {
-    BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME
+    BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE
 };
 enum processFunctionEnum
 {
@@ -51,7 +52,7 @@ enum
     RELEASE
     
 };
-
+const StringArray filterChoicesStr = {"LowPass","BandPass","HighPass"};
 const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DISTORTION","DECIMATOR","WAVESHAPER","FLANGER","PHASER"};
 
 struct filter_coeff_s
@@ -63,7 +64,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE"};
 //==============================================================================
 /**
 */
@@ -112,6 +113,13 @@ public:
         if (myIsPlaying == false) return -1;
         return steps[i];
     }
+    
+    void setFilterType(int index , int line_no)
+    {
+        myFilter[0][line_no].setFilterMode2(index);
+        myFilter[1][line_no].setFilterMode2(index);
+    }
+    
     bool myIsPlaying  = false;
     int steps[numOfLine] = {};
     std::atomic<float> * gridsArr[numOfLine][numOfStep];
@@ -126,11 +134,21 @@ public:
     std::atomic<float> *decayAtomic[numOfLine];
     std::atomic<float> *sustainAtomic[numOfLine];
     std::atomic<float> *releaseAtomic[numOfLine];
-
+    std::atomic<float> *envAtomic[numOfLine];
+    std::atomic<float> * filterTypeAtomic[numOfLine];
     std::atomic<float> *globalResyncBar;
     juce::AudioProcessorValueTreeState valueTreeState;
     
+    
+    void setAdsrUpdate(int line_no)
+    {
+        adsrParams[line_no].attack = *attackAtomic[line_no];
+        adsrParams[line_no].decay = *decayAtomic[line_no];
+        adsrParams[line_no].sustain = *sustainAtomic[line_no];
+        adsrParams[line_no].release = *releaseAtomic[line_no];
+        adsr[line_no].setParameters(adsrParams[line_no]);
 
+    }
     
     
     void setEffectType(int line_no,int fxIndex)
@@ -142,6 +160,7 @@ public:
     }
     int selectedEffect[numOfLine] = {};
     dsp::ProcessorDuplicator<dsp::IIR::Filter<float>, dsp::IIR::Coefficients<float>> bandpassfilter[numOfLine];
+    Filter myFilter[2][numOfLine];
 private:
     juce::UndoManager undoManager;
     float myBpm;
@@ -189,6 +208,10 @@ private:
     int debugcounter = 0;
 
     filter_coeff_s  filter_coeff[numOfLine] = {0};
+    
+    juce::ADSR adsr[numOfLine];
+    juce::ADSR::Parameters adsrParams[numOfLine];
+    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TugGlicentoAudioProcessor)
