@@ -13,21 +13,44 @@
 
 ReverbePanel::ReverbePanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    addAndMakeVisible(cutofSlider);
-    addAndMakeVisible(qSlider);
-    addAndMakeVisible(attackSlider);
-    addAndMakeVisible(decaySliader);
-    addAndMakeVisible(sustainSlider);
-    addAndMakeVisible(releaseSlider);
-    addAndMakeVisible(envSlider);
+    
+    
 
-    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    
+    addAndMakeVisible(roomSizeSlider);
+    addAndMakeVisible(dampingSlider);
+    addAndMakeVisible(wetLevelSlider);
+    addAndMakeVisible(dryLevelSlider);
+    addAndMakeVisible(widthSlider);
+ 
+
+    roomSizeSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    dampingSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    wetLevelSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    dryLevelSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    widthSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+
+
+
+    
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REVERBROOMSIZE]<<myLine;
+    roomSizeAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, roomSizeSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REVERBDAMPING]<<myLine;
+    dampingAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, dampingSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REVERBWETLEVEL]<<myLine;
+    wetLevelAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, wetLevelSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REVERBDRYLEVEL]<<myLine;
+    dryLevelAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, dryLevelSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REVERBWIDTH]<<myLine;
+    widthrAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, widthSlider);
+    
     
     addAndMakeVisible(effectLabel);
     String l;
@@ -43,7 +66,7 @@ ReverbePanel::~ReverbePanel()
 }
 void  ReverbePanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -64,16 +87,13 @@ void ReverbePanel::resized()
     allArea.reduce(10, 0);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
+    roomSizeSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    dampingSlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
+    wetLevelSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    dryLevelSlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    widthSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
  
    
 
@@ -116,7 +136,7 @@ DelayPanel::~DelayPanel()
 }
 void  DelayPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -155,22 +175,20 @@ void DelayPanel::resized()
 
 ChorusPanel::ChorusPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    addAndMakeVisible(cutofSlider);
-    addAndMakeVisible(qSlider);
-    addAndMakeVisible(attackSlider);
-    addAndMakeVisible(decaySliader);
-    addAndMakeVisible(sustainSlider);
-    addAndMakeVisible(releaseSlider);
-    addAndMakeVisible(envSlider);
+    addAndMakeVisible(rateSlider);
+    addAndMakeVisible(depthSlider);
+    addAndMakeVisible(centreDelaySlider);
+    addAndMakeVisible(feedbackSlider);
+    addAndMakeVisible(mixSlider);
+ 
+
     
-    
-    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    rateSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    depthSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    centreDelaySlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    feedbackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    mixSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+
     
     addAndMakeVisible(effectLabel);
     String l;
@@ -178,6 +196,27 @@ ChorusPanel::ChorusPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     effectLabel.setText(l, dontSendNotification);
     effectLabel.setColour(Label::ColourIds::textColourId,colourarray[line_no]);
     effectLabel.setJustificationType(Justification::centred);
+    
+
+    
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[CHORUSRATE]<<myLine;
+    rateSliderutofAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, rateSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[CHORUSDEPTH]<<myLine;
+    depthSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, depthSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[CHORUSDELAY]<<myLine;
+    centreDelaySliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, centreDelaySlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[CHORUSFEEDBACK]<<myLine;
+    feedbackSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, feedbackSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[CHORUSMIX]<<myLine;
+    mixSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, mixSlider);
+
 }
 
 ChorusPanel::~ChorusPanel()
@@ -186,7 +225,7 @@ ChorusPanel::~ChorusPanel()
 }
 void  ChorusPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -201,21 +240,25 @@ void  ChorusPanel::paint (juce::Graphics& g)
 }
 void ChorusPanel::resized()
 {
+    addAndMakeVisible(rateSlider);
+    addAndMakeVisible(depthSlider);
+    addAndMakeVisible(centreDelaySlider);
+    addAndMakeVisible(feedbackSlider);
+    addAndMakeVisible(mixSlider);
+    
     auto allArea = getLocalBounds();
     effectLabel.setBounds(allArea.removeFromTop(30));
     allArea.reduce(10, 10);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
+    rateSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    depthSlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
+    centreDelaySlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    feedbackSlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    mixSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+
  
 
     
@@ -254,7 +297,7 @@ DecimatorPanel::~DecimatorPanel()
 }
 void  DecimatorPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -323,7 +366,7 @@ PitchShifterPanel::~PitchShifterPanel()
 }
 void  PitchShifterPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -393,7 +436,7 @@ DistortionPanel::~DistortionPanel()
 }
 void  DistortionPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);
@@ -462,7 +505,7 @@ PhaserPanel::~PhaserPanel()
 }
 void  PhaserPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
      
     g.setColour (juce::Colours::orange);

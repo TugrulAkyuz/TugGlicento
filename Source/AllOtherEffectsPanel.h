@@ -29,14 +29,22 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
+
     
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
+    CustomRoratySlider roomSizeSlider;
+    CustomRoratySlider dampingSlider;
+    
+    CustomRoratySlider wetLevelSlider;
+    CustomRoratySlider dryLevelSlider;
+    CustomRoratySlider widthSlider;
+    
+    
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> roomSizeAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> dampingAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> wetLevelAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> dryLevelAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> widthrAttachment;
+
     Label effectLabel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReverbePanel)
@@ -89,15 +97,22 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
-    
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
 
+    CustomRoratySlider  rateSlider;
+    CustomRoratySlider depthSlider;
+    CustomRoratySlider centreDelaySlider;
+    CustomRoratySlider feedbackSlider;
+    CustomRoratySlider mixSlider;
+    
+    
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> rateSliderutofAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> depthSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> centreDelaySliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> feedbackSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
+ 
+    
+    
     Label effectLabel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChorusPanel)
 };

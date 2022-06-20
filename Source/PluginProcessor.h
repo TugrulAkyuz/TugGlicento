@@ -16,6 +16,8 @@ using namespace juce;
 
 #define MAX_DELAY_TIME   5
 
+const Colour backgroundColor  (25,25,25);
+
 const std::vector <juce::String> myNotetUnit =
 { "1nd","1n", "1nt",
     "2nd","2n","2nt",
@@ -35,9 +37,13 @@ const StringArray myNotetUnitSA  = { "1nd","1n", "1nt",
     "64nd","64n","64nt",
     "128nd","128n","128nt" };
 
+
+
+
 enum valueTreeNamesEnum
 {
-    BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE
+    BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
+    CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH
 };
 enum processFunctionEnum
 {
@@ -64,7 +70,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH"};
 //==============================================================================
 /**
 */
@@ -137,6 +143,22 @@ public:
     std::atomic<float> *envAtomic[numOfLine];
     std::atomic<float> * filterTypeAtomic[numOfLine];
     std::atomic<float> *globalResyncBar;
+    
+    std::atomic<float> * chorusRateAtomic[numOfLine];
+    std::atomic<float> * chorusdepthSAtomic[numOfLine];
+    std::atomic<float> * chorusDelayAtomic[numOfLine];
+    std::atomic<float> * chorusFeedbackAtomic[numOfLine];
+    std::atomic<float> * chorusMixAtomic[numOfLine];
+    
+    std::atomic<float> * reverbroomSizeAtomic[numOfLine];
+    std::atomic<float> * reverbdampingAtomic[numOfLine];
+    std::atomic<float> * reverbwetLevelAtomic[numOfLine];
+    std::atomic<float> * reverbdryLevelAtomic[numOfLine];
+    std::atomic<float> * reverbwidthAtomic[numOfLine];
+    
+
+    
+    
     juce::AudioProcessorValueTreeState valueTreeState;
     
     
@@ -190,10 +212,13 @@ private:
     void processBlockDecimator (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockDistortion (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockPhaser (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
-    
+    void processBlockFlanger(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
+    void processBlockPitchShifter(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
+    void processBlockReapeater(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
 
     
     std::unique_ptr <juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear>> mDelayLine[numOfLine];
+    juce::dsp::Chorus<float> chorus[numOfLine];
     
     dsp::Reverb::Parameters params;
     dsp::Reverb leftReverb[numOfLine], rightReverb[numOfLine];

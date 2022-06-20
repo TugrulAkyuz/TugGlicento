@@ -27,6 +27,106 @@ const juce::Colour colourarray [] = {
 };
 
 
+class KnobLookAndFeel : public LookAndFeel_V4
+{
+public:
+    Image myStrip;
+    KnobLookAndFeel()
+    {
+        setColour(Slider::thumbColourId, Colours::red);
+        myStrip = ImageCache::getFromMemory(BinaryData::untitled222_38_png, BinaryData::untitled222_38_pngSize);
+        //  bests : KNIGHT_png
+        //        : doc_png  green stabel not good
+        //         : mashine_png
+        //  MS20_png ehh
+        // oo_png antialising !!
+        // Pink_png make more brillant
+        //  untitled_png  , untitled222_png  more brillant
+        // _808_Vol_pngSize 32 is mot enough
+        // Blac_Plastic_png
+    }
+
+    void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+        const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider) override
+    {
+
+
+        const double fractRotation = (slider.getValue() - slider.getMinimum()) / (slider.getMaximum() - slider.getMinimum()); //value between 0 and 1 for current amount of rotation
+        const int nFrames = myStrip.getHeight() / myStrip.getWidth(); // number of frames for vertical film strip
+        const int frameIdx = (int)ceil(fractRotation * ((double)nFrames - 1.0)); // current index from 0 --> nFrames-1
+
+        const float radius = jmin(width / 2.0f, height / 2.0f);
+        const float centreX = x + width * 0.5f;
+        const float centreY = y + height * 0.5f;
+        const float rx = centreX - radius - 1.0f;
+        const float ry = centreY - radius /* - 1.0f*/;
+
+        g.drawImage(myStrip, // image
+            (int)rx, (int)ry, myStrip.getWidth(), myStrip.getWidth(),   // dest
+            0, frameIdx*myStrip.getWidth(), myStrip.getWidth(), myStrip.getWidth()); // source
+
+
+
+    }
+
+    void drawButtonBackground(Graphics& g, Button& button, const Colour& backgroundColour,
+        bool, bool isButtonDown) override
+    {
+        auto buttonArea = button.getLocalBounds();
+        auto edge = 4;
+
+        buttonArea.removeFromLeft(edge);
+        buttonArea.removeFromTop(edge);
+
+        // shadow
+        g.setColour(Colours::darkgrey.withAlpha(0.5f));
+        g.fillRect(buttonArea);
+
+        auto offset = isButtonDown ? -edge / 2 : -edge;
+        buttonArea.translate(offset, offset);
+
+        g.setColour(backgroundColour);
+        g.fillRect(buttonArea);
+    }
+
+    void drawButtonText(Graphics& g, TextButton& button, bool, bool isButtonDown) override
+    {
+        auto font = getTextButtonFont(button, button.getHeight());
+        g.setFont(font);
+        g.setColour(button.findColour(button.getToggleState() ? TextButton::textColourOnId
+            : TextButton::textColourOffId)
+            .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+
+        auto yIndent = jmin(4, button.proportionOfHeight(0.3f));
+        auto cornerSize = jmin(button.getHeight(), button.getWidth()) / 2;
+
+        auto fontHeight = roundToInt(font.getHeight() * 0.6f);
+        auto leftIndent = jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+        auto rightIndent = jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+        auto textWidth = button.getWidth() - leftIndent - rightIndent;
+
+        auto edge = 4;
+        auto offset = isButtonDown ? edge / 2 : 0;
+
+        if (textWidth > 0)
+            g.drawFittedText(button.getButtonText(),
+                leftIndent + offset, yIndent + offset, textWidth, button.getHeight() - yIndent * 2 - edge,
+                Justification::centred, 2);
+    }
+    float fontSize = 3;
+    Font getLabelFont(Label& label) override
+        {
+            label.getFont().setHeight(fontSize);
+            return label.getFont();
+        }
+    void setFontSize(float size)
+        {
+            fontSize = size;
+        }
+
+};
+
+
 class MyLookAndFeel : public juce::LookAndFeel_V4
 {
 private:
@@ -97,7 +197,8 @@ private:
         // g.fillEllipse (juce::Rectangle<float> (thumbWidth, thumbWidth).withCentre (thumbPoint));
         g.drawLine(backgroundArc.getBounds().getCentreX(), backgroundArc.getBounds().getCentreY(), thumbPoint.getX(), thumbPoint.getY(),lineW);
         
-        
+
+        // ...
     }
     Font getComboBoxFont (ComboBox& box) override
     {
@@ -215,7 +316,7 @@ public:
         setColour(juce::Slider::ColourIds::rotarySliderFillColourId, juce::Colours::orange);
         setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
         setColour(Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
-        
+     
 
         
     }
@@ -229,6 +330,8 @@ private:
     void paint(juce::Graphics & g) override
     {
         auto sBounds = getLocalBounds();
+       
+        
         getLookAndFeel().drawRotarySlider(g,
                                           sBounds.getX(),
                                           sBounds.getY(),
@@ -250,6 +353,7 @@ private:
     
     
     MyLookAndFeel myLookAndFeel;
-    
+    //KnobLookAndFeel myLookAndFeel;
     
 };
+

@@ -41,7 +41,8 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     
-    cutofSlider.setSkewFactor(4);
+  
+//    attackSlider.setSkewFactor(4);
     int i= 1;
    for(auto s: filterChoicesStr)
    {
@@ -51,6 +52,7 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     filterTypeCombo.onChange = [this]()
     {
         audioProcessor.setFilterType(filterTypeCombo.getSelectedItemIndex(),myLine);
+        repaint();
     };
     
     juce::String  tmp_s;
@@ -97,11 +99,13 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
         if(x ==  String (valueTreeNames[ATTACKNAME] + String(line_no))
            || x ==  String (valueTreeNames[DECAYNAME] + String(line_no))
            || x ==  String (valueTreeNames[SUSTAINNAME] + String(line_no))
-           || x ==  String (valueTreeNames[RELEASENAME] + String(line_no)))
+           || x ==  String (valueTreeNames[RELEASENAME] + String(line_no))
+           || x ==  String (valueTreeNames[FILTERTYPE] + String(line_no)))
             param->addListener(this);
     }
-
-    
+ 
+    cutofSlider.setRange (20, 20000, 2);
+    cutofSlider.setSkewFactorFromMidPoint(1000);
 }
 
 FilterPanel::~FilterPanel()
@@ -111,7 +115,7 @@ FilterPanel::~FilterPanel()
 void  FilterPanel::paint (juce::Graphics& g)
 {
     // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    g.fillAll (Colours::black);
+    g.fillAll (backgroundColor);
     String l = std::to_string(myLine) ;
     
     g.setColour (juce::Colours::orange);
@@ -128,7 +132,7 @@ void FilterPanel::resized()
 {
     auto allArea =  getLocalBounds();
     allArea.removeFromTop(20);
-    auto right = allArea.removeFromRight(allArea.getWidth()/2);
+    auto right = allArea.removeFromRight(3*allArea.getWidth()/5);
     right.reduce(10, 10);
     allArea.reduce(10, 10);
    
@@ -142,12 +146,13 @@ void FilterPanel::resized()
     decaySliader.setBounds(area);
     area = allArea.removeFromTop( h);
     sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
+  //  releaseSlider.setBounds(area);
     envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    filterTypeCombo.setBounds(area);
+    area = allArea.removeFromTop( h);
+   
+    filterTypeCombo.setBounds(area.reduced(0, 3));
     
-    freqResPanel.setBounds(right.removeFromTop(2*h));
+    freqResPanel.setBounds(right.removeFromTop(2*h).reduced(0, 3));
     curvePanel.setBounds(right);
 
     
@@ -178,7 +183,8 @@ void  FreqResPanel::paint (juce::Graphics& g)
 {
     auto sampleRate = audioProcessor.getSampleRate();
     auto   responseArea =   getLocalBounds();
-    auto w =  getLocalBounds().getWidth();
+    responseArea.reduce(1, 1);
+    auto w =  responseArea.getWidth();
     g.setColour (Colours::grey);
     g.drawRoundedRectangle(responseArea.toFloat(), 2.0f, 1.0f);
     int grid_x = 10;
@@ -187,14 +193,22 @@ void  FreqResPanel::paint (juce::Graphics& g)
     dashPattern[0] = 4.0;
     dashPattern[1] = 4.0;
     //            dashPattern[2] = 6.0;
-    
-    for(int i = 0 ; i < getWidth()/grid_x ; i++)
+    int inc = responseArea.getWidth()/grid_x;
+    for(int i = 0 ; i < grid_x ; i++)
     {
-        g.drawDashedLine(Line<float>(i*getWidth()/grid_x, 0, i*getWidth()/grid_x ,getHeight()), dashPattern,2, 0.5);
+        
+        Point<float>  start(responseArea.getX() +  i*inc, responseArea.getY() );
+        Point<float>  end(responseArea.getX() + i*inc,  responseArea.getBottom() );
+       
+        g.drawDashedLine(Line<float>(start,end), dashPattern,2, 0.5);
     }
-    for(int i = 0 ; i < getHeight()/grid_y ; i++)
+     inc = responseArea.getHeight()/grid_y;
+    for(int i = 0 ; i < grid_y ; i++)
     {
-        g.drawDashedLine(Line<float>(0,  i*getHeight()/grid_y, getWidth() , i*getHeight()/grid_y), dashPattern,2, 0.5);
+            Point<float>  start(responseArea.getX() , responseArea.getY() +  i*inc);
+            Point<float>  end(responseArea.getRight() ,  responseArea.getY()+ i*inc);
+  
+   g.drawDashedLine(Line<float>(start,end), dashPattern,2, 0.5);
         
     }
     
@@ -235,8 +249,9 @@ void  FreqResPanel::paint (juce::Graphics& g)
         double m =  map(mags[i]);
         freqResponse.lineTo(responseArea.getX() + i,m);
     }
-    freqResponse.lineTo(juce::Point<float>(getWidth()+10, getHeight()));
-    g.strokePath(freqResponse, PathStrokeType(2.0f));
+    PathStrokeType stroke(2.0f, PathStrokeType::JointStyle::curved, PathStrokeType::EndCapStyle::rounded);
+    freqResponse.lineTo(juce::Point<float>(responseArea.getWidth()+10, responseArea.getHeight()));
+    g.strokePath(freqResponse,stroke);
     Colour colour;
     colour = Colours::yellow.withAlpha(0.10f);
     DropShadow ds(colour, 1, {0, 1});

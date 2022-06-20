@@ -17,6 +17,10 @@
 #pragma once
 using namespace juce;
 
+const Colour buttonsDefaultColours  (25,25,25);
+
+
+
 const std::string midiNotes[]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
 class Grids : public juce::Component,  public juce::Timer

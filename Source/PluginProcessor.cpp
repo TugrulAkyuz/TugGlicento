@@ -63,10 +63,6 @@ valueTreeState(*this, &undoManager)
         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0,1.0f,0.9f));
         lineVol[j] = valueTreeState.getRawParameterValue(tmp_s);
         
-        tmp_s.clear();
-        tmp_s << valueTreeNames[LINEVOL] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0,1.0f,0.9f));
-        lineVol[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[EFFECT] << j;
@@ -75,7 +71,8 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[CUTOFF] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,20,20000.0f,200));
+        //valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,20,20000.0f,200));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s, NormalisableRange<float>(20,20000.0f,1.0f,0.25),200));
         cutOffAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
@@ -114,6 +111,63 @@ valueTreeState(*this, &undoManager)
         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,filterChoicesStr,1));
         filterTypeAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
+ 
+        tmp_s.clear();
+        tmp_s << valueTreeNames[CHORUSRATE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        chorusRateAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[CHORUSDEPTH]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        chorusdepthSAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[CHORUSDELAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        chorusDelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[CHORUSFEEDBACK]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        chorusFeedbackAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+       
+        tmp_s.clear();
+        tmp_s << valueTreeNames[CHORUSMIX]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        chorusMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+   
+ 
+         tmp_s.clear();
+         tmp_s << valueTreeNames[REVERBROOMSIZE]<<j;
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        reverbroomSizeAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+    
+         tmp_s.clear();
+         tmp_s << valueTreeNames[REVERBDAMPING]<<j;
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        reverbdampingAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+         tmp_s.clear();
+         tmp_s << valueTreeNames[REVERBWETLEVEL]<<j;
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        reverbwetLevelAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        
+         tmp_s.clear();
+         tmp_s << valueTreeNames[REVERBDRYLEVEL]<<j;
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        reverbdryLevelAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        
+         tmp_s.clear();
+         tmp_s << valueTreeNames[REVERBWIDTH]<<j;
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        reverbwidthAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+
+        
     }
     
     tmp_s.clear();
@@ -150,9 +204,9 @@ valueTreeState(*this, &undoManager)
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockDecimator);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockDistortion);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockPhaser);
-  
-    
-    
+    myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockFlanger);
+    myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockPitchShifter);
+    myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockReapeater);
     waveshape.functionToUse = [] (float x)
     {
          return std::sin (x);
@@ -254,6 +308,8 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         *bandpassfilter[i].state = *dsp::IIR::Coefficients<float>::makeBandPass(mySampleRate,  filter_coeff[i].freq,filter_coeff[i].q);
         
         adsr[i].setSampleRate(sampleRate);
+        chorus[i].prepare (spec);
+        chorus[i].reset();
         
     }
     
@@ -551,8 +607,13 @@ void TugGlicentoAudioProcessor::processBlockReverb (juce::AudioBuffer<float>& bu
 {
     DBG("processBlockReverb");
     
-
-    params.dryLevel = 0.5;
+ 
+    params.dryLevel = *reverbdryLevelAtomic[line_no];
+    params.damping = *reverbdampingAtomic[line_no];
+    params.roomSize = *reverbroomSizeAtomic[line_no];
+    params.wetLevel = *reverbwetLevelAtomic[line_no];
+    params.width = *reverbwidthAtomic[line_no];
+    
     leftReverb[line_no].setParameters (params);
     rightReverb[line_no].setParameters (params);
 
@@ -573,6 +634,15 @@ void TugGlicentoAudioProcessor::processBlockReverb (juce::AudioBuffer<float>& bu
 void TugGlicentoAudioProcessor::processBlockChorus (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
     DBG("processBlockChorus");
+    
+    chorus[line_no].setRate (*chorusRateAtomic[line_no]);
+    chorus[line_no].setDepth (*chorusdepthSAtomic[line_no]);
+    chorus[line_no].setCentreDelay (*chorusDelayAtomic[line_no]);
+    chorus[line_no].setFeedback (*chorusFeedbackAtomic[line_no]);
+    chorus[line_no].setMix (*chorusMixAtomic[line_no]);
+    
+    juce::dsp::AudioBlock<float> sampleBlock (copyBuffer[line_no]);
+    chorus[line_no].process (juce::dsp::ProcessContextReplacing<float> (sampleBlock));
 }
 void TugGlicentoAudioProcessor::processBlockDecimator (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
@@ -583,6 +653,19 @@ void TugGlicentoAudioProcessor::processBlockDistortion (juce::AudioBuffer<float>
     DBG("processBlockDistortion");
 }
 void TugGlicentoAudioProcessor::processBlockPhaser(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
+{
+    DBG("processBlockDistortion");
+}
+
+void TugGlicentoAudioProcessor::processBlockFlanger(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
+{
+    DBG("processBlockDistortion");
+}
+void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
+{
+    DBG("processBlockDistortion");
+}
+void TugGlicentoAudioProcessor::processBlockReapeater(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
     DBG("processBlockDistortion");
 }
@@ -600,7 +683,8 @@ void TugGlicentoAudioProcessor::processBlockFilter (juce::AudioBuffer<float>& bu
     for (auto i = 0; i < copyBuffer[line_no].getNumSamples(); ++i)
     {
         double freq = *envAtomic[line_no]*adsr[line_no].getNextSample();
-        myFilter[channel][line_no].setCutoffMod(freq);
+        myFilter[0][line_no].setCutoffMod(freq);
+        myFilter[1][line_no].setCutoffMod(freq);
         *chan0Write = myFilter[0][line_no].process(*chan0Write);
         *chan1Write = myFilter[1][line_no].process(*chan1Write);
         chan0Write++;

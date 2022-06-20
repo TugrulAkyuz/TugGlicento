@@ -66,13 +66,14 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
     void paint(juce::Graphics &g) override
     {
     
-        
+        auto  area = getLocalBounds();
+
         attack_time = *audioProcessor.valueTreeState.getRawParameterValue(String(valueTreeNames[ATTACKNAME])+String(myline));
         decay_time = *audioProcessor.valueTreeState.getRawParameterValue(String(valueTreeNames[DECAYNAME])+String(myline));;
         sustain_value =  *audioProcessor.valueTreeState.getRawParameterValue(String(valueTreeNames[SUSTAINNAME])+String(myline));;
         release_time =  *audioProcessor.valueTreeState.getRawParameterValue(String(valueTreeNames[RELEASENAME])+String(myline));;
         
-        auto area = getLocalBounds();
+       
         
     
         g.fillAll(juce::Colours::white);
@@ -138,6 +139,10 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
         colour = Colours::yellow.withAlpha(0.10f);
         ds = DropShadow(colour, 1, {0, 1});
         ds.drawForPath(g, p);
+        
+     
+        g.setColour (Colours::grey);
+        g.drawRoundedRectangle(area.toFloat(), 2.0f, 1.0f);
         
     }
     void resized() override

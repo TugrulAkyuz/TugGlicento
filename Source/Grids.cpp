@@ -185,12 +185,13 @@ void Grids::resized()
     auto w = (griidbounds.toFloat().getWidth()   /(n)) ;
     for ( auto *b : buttons) b->setVisible(false);
     stepArrow.setVisible(false);
+
     for ( int i = 0; i < n;i++)
     {
         if(step != i || step == -1)
         {
         buttons[i]->setVisible(true);
-        buttons[i]->setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::darkgrey);
+        buttons[i]->setColour(juce::TextButton::ColourIds::buttonColourId, buttonsDefaultColours);
         buttons[i]->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::orange);
         buttons[i]->setButtonText("");
         fb.items.add (juce::FlexItem (*buttons[i]).withMinWidth (w-2*marjin).withMinHeight ((float) griidbounds.getHeight() -2 ).withMargin(marjin));

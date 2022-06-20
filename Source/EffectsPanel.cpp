@@ -19,7 +19,7 @@
 #endif
 namespace ColorScheme
 {
-    inline juce::Colour getSliderBorderColor()
+    inline juce::Colour getColorHelper()
     {
         return colorHelper(juce::Colours::blue);
     }
@@ -61,8 +61,8 @@ EffectPanel::~EffectPanel()
 void  EffectPanel::paint (juce::Graphics& g)
 {
    // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-  //  g.fillAll ( ColorScheme::getSliderBorderColor());
-    g.fillAll (Colours::black);
+ // g.fillAll ( ColorScheme::getColorHelper());
+    g.fillAll (Colours::darkturquoise);
 }
 void EffectPanel::resized()
 {

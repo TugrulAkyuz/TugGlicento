@@ -4,6 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginManufacturer="2Rule" aaxIdentifier="com.2Rule.tugGlicento">
   <MAINGROUP id="hTwwgr" name="TugGlicento">
+    <FILE id="GUF4gm" name="untitled222_38.png" compile="0" resource="1"
+          file="../../Desktop/JuceDevTug/2RuleSynth_new/Resource/untitled222_38.png"/>
     <GROUP id="{E3FE00F9-FDCE-E3DE-0FE6-525C27DEA28A}" name="Source">
       <FILE id="ETQKxw" name="MoogFilter.cpp" compile="1" resource="0" file="Source/MoogFilter.cpp"/>
       <FILE id="nyt4vc" name="MoogFilter.h" compile="0" resource="0" file="Source/MoogFilter.h"/>
