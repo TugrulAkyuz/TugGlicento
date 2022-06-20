@@ -66,14 +66,22 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
+
+
+    CustomRoratySlider dreywetdelaySlider;
+    CustomRoratySlider timedelaySlider;
     
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
+    CustomRoratySlider timedelaysyncSlider;
+    CustomRoratySlider feedbackdelaySlider;
+    CustomRoratySlider delaysyncSlider;
+
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> dreywetdelayAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> timedelayAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> timedelaysyncAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> feedbackdelayAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> delaysyncAttachment;
+
+    
     
     Label effectLabel;
     

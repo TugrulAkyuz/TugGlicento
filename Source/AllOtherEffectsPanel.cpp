@@ -106,22 +106,45 @@ void ReverbePanel::resized()
 
 DelayPanel::DelayPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    addAndMakeVisible(cutofSlider);
-    addAndMakeVisible(qSlider);
-    addAndMakeVisible(attackSlider);
-    addAndMakeVisible(decaySliader);
-    addAndMakeVisible(sustainSlider);
-    addAndMakeVisible(releaseSlider);
-    addAndMakeVisible(envSlider);
     
-    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+
+
+
     
+    addAndMakeVisible(dreywetdelaySlider);
+    addAndMakeVisible(timedelaySlider);
+    addAndMakeVisible(timedelaysyncSlider);
+    addAndMakeVisible(feedbackdelaySlider);
+    addAndMakeVisible(delaysyncSlider);
+
+    
+    dreywetdelaySlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    timedelaySlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    timedelaysyncSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    feedbackdelaySlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    delaysyncSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    
+
+    
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[DELAYDREYWETDELAY]<<myLine;
+    dreywetdelayAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, dreywetdelaySlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[DELAYTIMEDELAY]<<myLine;
+    timedelayAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, timedelaySlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[DELAYTIMEDELAYSYNC]<<myLine;
+    timedelaysyncAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, timedelaysyncSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[DELAYFEEDBACKDELAY]<<myLine;
+    feedbackdelayAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, feedbackdelaySlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[DELAYSYNC]<<myLine;
+    delaysyncAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, delaysyncSlider);
+    
+
     addAndMakeVisible(effectLabel);
     String l;
     l << "DELAY " << myLine;
@@ -156,17 +179,14 @@ void DelayPanel::resized()
     allArea.reduce(10, 10);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
+    dreywetdelaySlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    timedelaySlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
+    timedelaysyncSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    feedbackdelaySlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
- 
+    delaysyncSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+
 
     
 

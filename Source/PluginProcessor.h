@@ -18,6 +18,18 @@ using namespace juce;
 
 const Colour backgroundColor  (25,25,25);
 
+const double  syncValues[8]= {
+    1.0/32,
+    1.0/16,
+    1.0/8,
+    1.0/4,
+    1.0/2,
+    2.0/3,
+    3.0/4,
+    1.0
+};
+
+
 const std::vector <juce::String> myNotetUnit =
 { "1nd","1n", "1nt",
     "2nd","2n","2nt",
@@ -43,7 +55,8 @@ const StringArray myNotetUnitSA  = { "1nd","1n", "1nt",
 enum valueTreeNamesEnum
 {
     BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
-    CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH
+    CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH,
+    DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC
 };
 enum processFunctionEnum
 {
@@ -70,7 +83,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC"};
 //==============================================================================
 /**
 */
@@ -157,7 +170,11 @@ public:
     std::atomic<float> * reverbwidthAtomic[numOfLine];
     
 
-    
+    std::atomic<float> * dreywetdelayAtomic[numOfLine];
+    std::atomic<float> * timedelayAtomic[numOfLine];
+    std::atomic<float> * timedelaysyncAtomic[numOfLine];
+    std::atomic<float> * feedbackdelayAtomic[numOfLine];
+    std::atomic<float> * delaysyncAtomic[numOfLine];
     
     juce::AudioProcessorValueTreeState valueTreeState;
     
@@ -237,6 +254,16 @@ private:
     juce::ADSR adsr[numOfLine];
     juce::ADSR::Parameters adsrParams[numOfLine];
     
+    struct DelayVariables_s {
+        std::vector <float> mCircularBuffer[2];
+        int mCicularBufferWriteHead;
+        int mCircularBufferLenght;
+        float mDelayTimeinSamples;
+        float mDelayRead;
+        float mFeedback[2];
+        float mDelayTimeSmooth;
+        float mDryWet;
+    }delayVariables [numOfLine];
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TugGlicentoAudioProcessor)

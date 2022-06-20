@@ -166,7 +166,35 @@ valueTreeState(*this, &undoManager)
          valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
         reverbwidthAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
+      //DELAY
 
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DELAYDREYWETDELAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        dreywetdelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+   
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DELAYTIMEDELAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        timedelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+       
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DELAYTIMEDELAYSYNC]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        timedelaysyncAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+       
+       
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DELAYFEEDBACKDELAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        feedbackdelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+       
+       
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DELAYSYNC]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        delaysyncAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
     }
     
@@ -302,6 +330,10 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         mDelayLine[i] = std::make_unique< juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear > > ( MAX_DELAY_TIME*  sampleRate);
         mDelayLine[i]->reset();
         mDelayLine[i]->prepare(spec);
+        delayVariables[i].mCircularBufferLenght =sampleRate*MAX_DELAY_TIME;
+        delayVariables[i].mCicularBufferWriteHead = 0;
+        delayVariables[i].mCircularBuffer[0].resize(delayVariables[i].mCircularBufferLenght,0);
+        delayVariables[i].mCircularBuffer[1].resize(delayVariables[i].mCircularBufferLenght,0);
         
         filter_coeff[i].freq = 200*pow(2,i);
         filter_coeff[i].q = 0.5;
@@ -310,6 +342,18 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         adsr[i].setSampleRate(sampleRate);
         chorus[i].prepare (spec);
         chorus[i].reset();
+        
+        for(auto channel = 0 ; channel < 2 ; channel++)
+        {
+            delayVariables[i].mCircularBuffer[channel].resize(delayVariables[i].mCircularBufferLenght,0);
+        }
+        delayVariables[i].mDelayTimeSmooth = 0;
+        delayVariables[i].mCicularBufferWriteHead = 0;
+        delayVariables[i].mCircularBufferLenght = 0;
+        delayVariables[i].mDelayTimeinSamples = 0;
+        delayVariables[i].mDryWet = 0.5;
+        delayVariables[i].mDelayRead = 0;
+        
         
     }
     
@@ -580,27 +624,47 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new TugGlicentoAudioProcessor();
 }
-void TugGlicentoAudioProcessor::processBlockDleay (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
+void TugGlicentoAudioProcessor::processBlockDleay (juce::AudioBuffer<float>& buffr, juce::MidiBuffer& midiMessages,int line_no)
 {
     DBG("processBlockDleay");
+    float * buf[2];
+    buf[0] = copyBuffer[line_no].getWritePointer(0);
+    buf[1] = copyBuffer[line_no].getWritePointer(1);
+    float delayTime;
     
-    const int numInputChannels = getTotalNumInputChannels();
-    const int numSamples = buffer.getNumSamples();
+    //buffer.get
+    // mDelayLine.popSample(int channel);
     
-    for (int channel = 0; channel < numInputChannels; ++channel)
+    //DBG(*parameters.oscGenValues[0][0]);
+    
+    if(*delaysyncAtomic[line_no] == false)
     {
-        auto* channelDatain = buffer.getWritePointer (channel);
-        auto* channelDataout = copyBuffer[line_no].getWritePointer (channel);
-        
-        for (int sample = 0; sample < numSamples; ++sample) {
-            const float in = channelDatain[sample];
-            
-            channelDataout[sample] = in*lineGainSmooth[line_no].getNextValue();
-            
-            
-        }
+        delayTime =  (*timedelayAtomic[line_no]);
     }
-    
+    else
+    {
+        delayTime =  4* syncValues[(int)*timedelaysyncAtomic[line_no]] /(myBpm/60);
+        
+    }
+
+
+        for(int i = 0 ; i < copyBuffer[line_no].getNumSamples(); i++)
+        {
+            delayVariables[line_no].mDelayTimeSmooth = delayVariables[line_no].mDelayTimeSmooth - 0.001*(delayVariables[line_no].mDelayTimeSmooth - delayTime);
+            delayVariables[line_no].mDelayTimeinSamples = getSampleRate()* delayVariables[line_no].mDelayTimeSmooth;
+
+            
+            for(int channel = 0; channel < 2 ; channel++)
+            {
+
+
+            mDelayLine[line_no]->pushSample( channel, *feedbackdelayAtomic[line_no] * (copyBuffer[line_no].getReadPointer(channel)[i] + delayVariables[line_no].mFeedback[channel]));
+            auto d =  mDelayLine[line_no]->popSample(channel, delayVariables[line_no].mDelayTimeinSamples);
+            delayVariables[line_no].mFeedback[channel] = d;
+            copyBuffer[line_no].getWritePointer(channel)[i] = copyBuffer[line_no].getReadPointer(channel)[i]*(1 - *dreywetdelayAtomic[line_no]) + *dreywetdelayAtomic[line_no]*d;
+        }
+
+    }
     
 }
 void TugGlicentoAudioProcessor::processBlockReverb (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages ,int line_no)
