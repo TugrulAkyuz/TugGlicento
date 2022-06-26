@@ -10,6 +10,8 @@
 
 #include <JuceHeader.h>
 #include "MoogFilter.h"
+#include "Distortion.h"
+#include "PitchShifter.h"
 using namespace juce;
 #define numOfStep  32
 #define numOfLine  5
@@ -17,6 +19,13 @@ using namespace juce;
 #define MAX_DELAY_TIME   5
 
 const Colour backgroundColor  (25,25,25);
+
+enum
+{
+    preGainIndex,    // [2]
+    waveshaperIndex,
+    postGainIndex    // [3]
+};
 
 const double  syncValues[8]= {
     1.0/32,
@@ -56,11 +65,12 @@ enum valueTreeNamesEnum
 {
     BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
     CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH,
-    DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC
+    DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC,PHASERDEPTH,PHASERPEEDBAC,PHASERMIX,PHASERDECAY,PHASERRATE,
+    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME
 };
 enum processFunctionEnum
 {
-    REVERB,DELAY,CHORUS,DISTORTION,DECIMATOR,WAVESHAPER,FLANGER,PHASER
+    REVERB,DELAY,CHORUS,DECIMATOR,DISTORTION,PHASER,FLANGER,WAVESHAPER
 };
 
 enum
@@ -71,8 +81,11 @@ enum
     RELEASE
     
 };
+
+const StringArray distChoicesStr = {"Soft","ArcTan","Hard","Square","Cubic","FoldB","gloubiApp"};
+
 const StringArray filterChoicesStr = {"LowPass","BandPass","HighPass"};
-const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DISTORTION","DECIMATOR","WAVESHAPER","FLANGER","PHASER"};
+const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DECIMATOR","DISTORTION","PHASER","FLANGER","WAVESHAPER"};
 
 struct filter_coeff_s
 {
@@ -83,7 +96,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME"};
 //==============================================================================
 /**
 */
@@ -176,6 +189,27 @@ public:
     std::atomic<float> * feedbackdelayAtomic[numOfLine];
     std::atomic<float> * delaysyncAtomic[numOfLine];
     
+    std::atomic<float> * phaserDepthAtomic[numOfLine];
+    std::atomic<float> * phaserPeedbacAtomic[numOfLine];
+    std::atomic<float> * phaserMixAtomic[numOfLine];
+    std::atomic<float> * phaserDecayAtomic[numOfLine];
+    std::atomic<float> * phaserRateAtomic[numOfLine];
+    
+    std::atomic<float> * distModeAtomic[numOfLine];
+    std::atomic<float> * distDriveAtomic[numOfLine];
+    std::atomic<float> * distMixAtomic[numOfLine];
+    std::atomic<float> * distthresholdAtomic[numOfLine];
+
+    
+    //std::unique_ptr<RubberBandPitchShifter> pitchShifter[numOfLine];
+
+    std::atomic<float> * pitchShifteroctavesAtomic[numOfLine];
+    std::atomic<float> * pitchShiftersemitonesAtomic[numOfLine];
+    std::atomic<float> * pitchShiftercentsAtomic[numOfLine];
+    std::atomic<float> * pitchShifterwet_dryAtomic[numOfLine];
+    std::unique_ptr<AudioParameterInt *>  deneme[numOfLine];
+    juce::AudioParameterBool* pitchShifterformatAtomic[numOfLine];
+    
     juce::AudioProcessorValueTreeState valueTreeState;
     
     
@@ -220,12 +254,12 @@ private:
     std::vector<void (TugGlicentoAudioProcessor::* )(juce::AudioBuffer<float>&, juce::MidiBuffer&,int )> processFunctions;
     std::vector<void (TugGlicentoAudioProcessor::* )(juce::AudioBuffer<float>&, juce::MidiBuffer&,int )> processFunctionsRealTime;
     
+    void processBlockFilter (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     
     
     void processBlockDleay (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockReverb (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockChorus (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
-    void processBlockFilter (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockDecimator (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockDistortion (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockPhaser (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
@@ -236,11 +270,12 @@ private:
     
     std::unique_ptr <juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear>> mDelayLine[numOfLine];
     juce::dsp::Chorus<float> chorus[numOfLine];
+    juce::dsp::Phaser<float> phaser[numOfLine];
     
     dsp::Reverb::Parameters params;
     dsp::Reverb leftReverb[numOfLine], rightReverb[numOfLine];
 
-    
+    ScopedPointer<Distortion> distProcessor[numOfLine];;
 
     dsp::WaveShaper<float>  waveshape;
 
@@ -264,6 +299,22 @@ private:
         float mDelayTimeSmooth;
         float mDryWet;
     }delayVariables [numOfLine];
+    
+    struct PitchShiftVariables_s {
+        std::vector <float> mCircularBuffer[2];
+        int mCicularBufferWriteHead;
+        int mCircularBufferLenght;
+        
+        
+    }pitchshiftVariables;
+    
+    double linearInterpol(float v0, float v1, float t)
+    {
+        return (1 - t) * v0 + t * v1;
+    }
+    
+    //==============================================================================
+
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TugGlicentoAudioProcessor)

@@ -26,6 +26,72 @@ const juce::Colour colourarray [] = {
     
 };
 
+class IfwLookAndFeel : public LookAndFeel_V4
+{
+public:
+    IfwLookAndFeel() {}
+    ~IfwLookAndFeel() {}
+
+    void drawRotarySlider (Graphics& g, int x, int y, int width, int height,
+                           float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle,
+                           Slider&) override;
+};
+
+//==============================================================================
+class myLookAndFeelV1 : public LookAndFeel_V4
+{
+public:
+    myLookAndFeelV1();
+
+    void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+        float rotaryStartAngle, float rotaryEndAngle, Slider& slider) override;
+
+private:
+    Image img1;
+
+};
+
+//==============================================================================
+class myLookAndFeelV2 : public LookAndFeel_V4
+{
+
+public:
+    myLookAndFeelV2();
+
+    void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+        float rotaryStartAngle, float rotaryEndAngle, Slider& slider) override;
+    Label* createSliderTextBox (Slider& slider) override
+    {
+        auto* l = LookAndFeel_V2::createSliderTextBox (slider);
+
+        if (getCurrentColourScheme() == LookAndFeel_V4::getGreyColourScheme() && (slider.getSliderStyle() == Slider::LinearBar
+                                                                                   || slider.getSliderStyle() == Slider::LinearBarVertical))
+        {
+            l->setColour (Label::textColourId, Colours::orange.withAlpha (0.7f));
+        }
+        auto f = l->getFont();
+        f.setHeight(10);
+        l->setFont(f);
+        return l;
+    }
+
+};
+
+//==============================================================================
+class myLookAndFeelV3 : public LookAndFeel_V4
+{
+
+public:
+    myLookAndFeelV3();
+
+    void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+        float rotaryStartAngle, float rotaryEndAngle, Slider& slider) override;
+
+private:
+    Image img2;
+
+};
+
 
 class KnobLookAndFeel : public LookAndFeel_V4
 {
@@ -218,7 +284,8 @@ private:
         auto cornerSize = box.findParentComponentOfClass<ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
         Rectangle<int> boxBounds (0, 0, width, height);
 
-        g.setColour (box.findColour (ComboBox::backgroundColourId));
+        //g.setColour (box.findColour (ComboBox::backgroundColourId));
+        g.setColour (Colour(25,25,25));
         g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
 
         g.setColour (juce::Colours::orange);
@@ -310,23 +377,26 @@ public:
         setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
         //
         setRange(0.0f, 100.0f,1);
-        setTextBoxStyle(juce::Slider::TextBoxAbove, true, 120, 20);
+        setTextBoxStyle(juce::Slider::NoTextBox, true, 50, 11);
         
         //
-        setColour(juce::Slider::ColourIds::rotarySliderFillColourId, juce::Colours::orange);
-        setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
+        setColour(juce::Slider::ColourIds::rotarySliderFillColourId, juce::Colours::lightgreen);
+        setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::lightgreen);
         setColour(Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
-     
-
+        setColour(Slider::rotarySliderOutlineColourId, Colours::orange.withAlpha(0.3f));
         
     }
     ~CustomRoratySlider(){
         setLookAndFeel(nullptr);
         
     }
+    void setName(String n)
+      {
+          name = n;
+      }
 private:
     //juce:
-    
+
     void paint(juce::Graphics & g) override
     {
         auto sBounds = getLocalBounds();
@@ -338,22 +408,29 @@ private:
                                           sBounds.getWidth(),
                                           sBounds.getHeight(),
                                           juce::jmap(getValue(),getRange().getStart(),getRange().getEnd(),0.0,1.0),
-                                          juce::MathConstants<float>::pi *1.5,
-                                          juce::MathConstants<float>::pi *3.0,
+                                          juce::MathConstants<float>::pi *1.25,
+                                          juce::MathConstants<float>::pi *2.75,
                                           *this);
         
         g.setFont(11);
-       g.drawFittedText(juce::String(getRange().getStart()), sBounds, juce::Justification::centredLeft, 0.1);
-       g.drawFittedText(juce::String(getRange().getEnd()), sBounds.removeFromLeft(sBounds.getWidth()/2), juce::Justification::bottomRight, 0.1);
-        g.drawFittedText(juce::String(getValue()), sBounds, juce::Justification::topRight, 0.1);
+      // g.drawFittedText(juce::String(getRange().getStart()), sBounds, juce::Justification::centredLeft, 0.1);
+     //  g.drawFittedText(juce::String(getRange().getEnd()), sBounds.removeFromLeft(sBounds.getWidth()/2), juce::Justification::bottomRight, 0.1);
+     //   g.drawFittedText(juce::String(getValue()), sBounds, juce::Justification::topRight, 0.1);
+   
+        g.setColour(Colours::white);
+        g.drawFittedText(name, sBounds.removeFromBottom(sBounds.getHeight()/4), juce::Justification::centred, 0.1);
         
         
         
     }
     
-    
-    MyLookAndFeel myLookAndFeel;
+
+   // myLookAndFeelV2 myLookAndFeel;
+    IfwLookAndFeel myLookAndFeel;
+    //Label name;
+    String name = "";
     //KnobLookAndFeel myLookAndFeel;
-    
+
 };
 
+ 

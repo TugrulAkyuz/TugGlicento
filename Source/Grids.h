@@ -52,7 +52,7 @@ private:
     juce::ComboBox gridEffectCombo;
     juce::ArrowButton stepArrow;
     
-    juce::TextButton midiInNote;
+    juce::TextButton soloButton;
   
     juce::Label myLineLabel;
     
@@ -78,20 +78,20 @@ private:
     {
         if(m ==  -1)
         {
-          midiInNote.setButtonText("");
+            soloButton.setButtonText("");
             
            // midiInNote.setColour(juce::Text);
             auto x = getLookAndFeel().findColour(juce::TextButton::ColourIds::buttonColourId);
-            midiInNote.setColour(juce::TextButton::ColourIds::buttonColourId, x);
+            soloButton.setColour(juce::TextButton::ColourIds::buttonColourId, x);
         }
         else
         {
             int i = m / 12;
             m %= 12;
             
-            midiInNote.setButtonText(midiNotes[m] + std::to_string(i));
+            soloButton.setButtonText(midiNotes[m] + std::to_string(i));
            // midiInNote.setColour(juce::TextButton::ColourIds::buttonColourId, colourarray[myLine]);
-            midiInNote.setColour(juce::TextButton::ColourIds::buttonColourId,Colours::lightgreen);
+            soloButton.setColour(juce::TextButton::ColourIds::buttonColourId,Colours::lightgreen);
         }
     }
     

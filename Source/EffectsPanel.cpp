@@ -130,6 +130,8 @@ void EffectPanel::resized()
         delayPanel.getUnchecked(i)->setVisible(false);
         chorusPanel.getUnchecked(i)->setVisible(false);
         decimatorPanel.getUnchecked(i)->setVisible(false);
+        phaserPanel.getUnchecked(i)->setVisible(false);
+        distortionPanel.getUnchecked(i)->setVisible(false);
         
     }
     lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
@@ -160,8 +162,19 @@ void EffectPanel::resized()
               decimatorPanel.getUnchecked(i)->setVisible(true);
               
           }
+        if(audioProcessor.selectedEffect[i] == PHASER)
+          {
+              phaserPanel.getUnchecked(i)->setBounds(area);
+              phaserPanel.getUnchecked(i)->setVisible(true);
+              
+          }
         
-
+        if(audioProcessor.selectedEffect[i] == DISTORTION)
+          {
+              distortionPanel.getUnchecked(i)->setBounds(area);
+              distortionPanel.getUnchecked(i)->setVisible(true);
+              
+          }
        
         
     }

@@ -196,6 +196,76 @@ valueTreeState(*this, &undoManager)
         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
         delaysyncAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
+    
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PHASERDEPTH]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        phaserDepthAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PHASERPEEDBAC]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,-1.0,1.0,0.1));
+        phaserPeedbacAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+       
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PHASERMIX]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        phaserMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PHASERDECAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,1.0));
+        phaserDecayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PHASERRATE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,3));
+        phaserRateAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        
+  
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DISTMODE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,distChoicesStr,1));
+        distModeAtomic[j]  = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DISTDRIVE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,25,1.0));
+        distDriveAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DISTMIX]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,3));
+        distMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[DISTTRESHOLD]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,3));
+        distthresholdAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        // PitchShifter
+
+
+        
+ 
+         
+        
+//        
+//        tmp_s.clear();
+//        tmp_s << valueTreeNames[DENEME]<<j;
+//        deneme[j] = new juce::AudioParameterInt(tmp_s,tmp_s, 0, 3, 0);
+//        addParameter(deneme[j]);
+//        
+//        
+// 
+ 
+
+
+     
+ 
+        
     }
     
     tmp_s.clear();
@@ -228,7 +298,6 @@ valueTreeState(*this, &undoManager)
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockReverb);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockDleay);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockChorus);
-    myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockFilter);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockDecimator);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockDistortion);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockPhaser);
@@ -342,6 +411,8 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         adsr[i].setSampleRate(sampleRate);
         chorus[i].prepare (spec);
         chorus[i].reset();
+        phaser[i].prepare (spec);
+        phaser[i].reset();
         
         for(auto channel = 0 ; channel < 2 ; channel++)
         {
@@ -353,9 +424,18 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         delayVariables[i].mDelayTimeinSamples = 0;
         delayVariables[i].mDryWet = 0.5;
         delayVariables[i].mDelayRead = 0;
-        
+        distProcessor[i] = new Distortion();
         
     }
+    
+    pitchshiftVariables.mCircularBufferLenght =sampleRate;
+    pitchshiftVariables.mCicularBufferWriteHead = 0;
+    for(auto channel = 0 ; channel < 2 ; channel++)
+    {
+        pitchshiftVariables.mCircularBuffer[channel].resize(pitchshiftVariables.mCircularBufferLenght,0);
+
+    }
+    
     
     waveshape.prepare(spec);
     waveshape.reset();
@@ -546,7 +626,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
            for(int i = 0 ; i< numOfLine ;i++)
             {
       
-                *cb_ptr[i][j] = * buf_ptr[j]*lineGainSmooth[i].getNextValue()*lineVolSmooth[i].getNextValue();
+                *cb_ptr[i][j] = * buf_ptr[j]*lineGainSmooth[i].getNextValue();
                 
                 cb_ptr[i][j]++;
             }
@@ -580,13 +660,26 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
 
         buffer.clear();
+   
+//    for(auto i = 0 ; i < numOfLine ; i++)
+//    for (auto channel = 0; channel < copyBuffer[i].getNumChannels(); channel++)
+//    {
+//
+//        buffer.addFrom(channel, 0, copyBuffer[i], channel, 0, buffer.getNumSamples());
+//
+//    }
     
-    for(auto i = 0 ; i < numOfLine ; i++)
-    for (auto channel = 0; channel < copyBuffer[i].getNumChannels(); channel++)
+    for (int channel = 0; channel < getNumInputChannels(); ++channel)
     {
+        float* channelDatato = buffer.getWritePointer (channel);
+        for(auto l = 0 ; l < numOfLine ; l++)
+        {
+            float* channelDatafrom = copyBuffer[l].getWritePointer (channel);
         
-        buffer.addFrom(channel, 0, copyBuffer[i], channel, 0, buffer.getNumSamples());
-        
+            for (int i = 0; i < copyBuffer[l].getNumSamples(); ++i) {
+                channelDatato[i] += channelDatafrom[i]*lineVolSmooth[l].getNextValue()/4;
+            }
+        }
     }
     
     // (this->*(processFunctions[0]))(buffer,midiMessages);
@@ -715,10 +808,36 @@ void TugGlicentoAudioProcessor::processBlockDecimator (juce::AudioBuffer<float>&
 void TugGlicentoAudioProcessor::processBlockDistortion (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
     DBG("processBlockDistortion");
+    
+
+    
+    distProcessor[line_no]->controls.drive = * distDriveAtomic[line_no];
+    distProcessor[line_no]->controls.mode =  * distModeAtomic[line_no];
+    distProcessor[line_no]->controls.threshold =  * distthresholdAtomic[line_no];
+    distProcessor[line_no]->controls.mix =   * distMixAtomic[line_no];
+    
+    for (int channel = 0; channel < getNumInputChannels(); ++channel) {
+        float* channelData = copyBuffer[line_no].getWritePointer (channel);
+
+        for (int i = 0; i < copyBuffer[line_no].getNumSamples(); ++i) {
+            channelData[i] = distProcessor[line_no]->processSample(channelData[i]);
+        }
+    }
 }
 void TugGlicentoAudioProcessor::processBlockPhaser(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
     DBG("processBlockDistortion");
+    phaser[line_no].setRate (*phaserRateAtomic[line_no]);
+    phaser[line_no].setDepth (*phaserDepthAtomic[line_no]);
+    phaser[line_no].setMix(*phaserMixAtomic[line_no]);
+    phaser[line_no].setFeedback (*phaserPeedbacAtomic[line_no]);
+    phaser[line_no].setCentreFrequency(*phaserDecayAtomic[line_no]);
+    
+    juce::dsp::AudioBlock<float> sampleBlock (copyBuffer[line_no]);
+    phaser[line_no].process (juce::dsp::ProcessContextReplacing<float> (sampleBlock));
+    
+
+    
 }
 
 void TugGlicentoAudioProcessor::processBlockFlanger(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
@@ -727,7 +846,77 @@ void TugGlicentoAudioProcessor::processBlockFlanger(juce::AudioBuffer<float>& bu
 }
 void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
-    DBG("processBlockDistortion");
+
+   
+    auto r =  log(2);
+    float pitch_value = 0.5;
+    int block_len = 8;
+
+    
+
+        
+        for (auto i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            for (int channel = 0; channel < getNumInputChannels(); ++channel)
+                pitchshiftVariables.mCircularBuffer[channel].at(pitchshiftVariables.mCicularBufferWriteHead) =  buffer.getSample(channel, i);
+            pitchshiftVariables.mCicularBufferWriteHead++;
+            pitchshiftVariables.mCicularBufferWriteHead %= pitchshiftVariables.mCircularBufferLenght;
+    
+        }
+   
+
+    
+    for (int channel = 0; channel < getNumInputChannels(); ++channel) {
+       
+        
+        float start_index = pitchshiftVariables.mCicularBufferWriteHead;
+        float fade_out_index = start_index +  4*log(pitch_value)/r;
+        
+        float first_fade_out_index = fade_out_index;
+        float first_start_index = start_index;
+        
+        if(fade_out_index < 0) fade_out_index = fade_out_index +  pitchshiftVariables.mCircularBufferLenght;
+        float incr = pitch_value;
+        int b = 0;
+        for (auto i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            
+
+            float v = b*1.0f/(block_len/2);
+            int v0 =  fade_out_index;
+            int v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
+            float t = fade_out_index - v0;
+            float red_sample = (1- v)*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
+                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
+             v0 =  start_index;
+             v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
+             t = start_index - v0;
+            float green_sample = (v)*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
+                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
+            
+            buffer.setSample(channel, i, red_sample + green_sample);
+            b++;
+            b %= block_len/2;
+            if(b == 0)
+            {
+                first_start_index += block_len/2;
+                first_fade_out_index += block_len/2;
+                start_index = first_start_index - incr;
+                fade_out_index = first_fade_out_index - incr;
+            }
+            fade_out_index += incr;
+            if(fade_out_index > pitchshiftVariables.mCircularBufferLenght - 1)
+                fade_out_index =  fade_out_index -  (pitchshiftVariables.mCircularBufferLenght - 1);
+            start_index += incr;
+            if(start_index > pitchshiftVariables.mCircularBufferLenght - 1)
+                start_index =  start_index -  (pitchshiftVariables.mCircularBufferLenght - 1);
+           
+        
+        }
+    }
+    
+    
+    
 }
 void TugGlicentoAudioProcessor::processBlockReapeater(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {

@@ -19,7 +19,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
                                                                                    juce::Colours::orange)
 {
     
-    addAndMakeVisible(midiInNote);
+    addAndMakeVisible(soloButton);
     addAndMakeVisible(myLineLabel);
     addAndMakeVisible(stepArrow);
     addAndMakeVisible(gridNumberSlider);
@@ -29,6 +29,8 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     addAndMakeVisible(gridEffectCombo);
     gridNumberSlider.setInterceptsMouseClicks(true, false) ;
     
+    gridDurationCombo.setColour(PopupMenu::backgroundColourId, Colours::blue);
+    
     addMouseListener(this, true);
     myLine = line;
     step = 0;
@@ -36,7 +38,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     myLineLabel.setColour(juce::Label::ColourIds::textColourId, colourarray[myLine]);
     myLineLabel.setJustificationType(Justification::right);
     
-    midiInNote.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
+    soloButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
  
     //octaveSlider.gette
  
@@ -48,8 +50,8 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     gridEffectCombo.setLookAndFeel(&myLookAndFeel);
     gridEffectCombo.getLookAndFeel().setColour (ComboBox::textColourId, Colours::orange);
 
-    gridNumberSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    gridVolSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    //gridNumberSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    //gridVolSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
 
     int i= 1;
     for(auto s: myNotetUnit)
@@ -140,7 +142,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
        
         
     };
-    midiInNote.onClick = [this]()
+    soloButton.onClick = [this]()
     {
         auto lightbox = dynamic_cast<TugGlicentoAudioProcessorEditor*>(getParentComponent());
         if (lightbox)
@@ -162,14 +164,14 @@ void Grids::resized()
     int marjin =  1;
  
     auto area = getLocalBounds();
-    gridEffectCombo.setBounds(area.removeFromRight(80).reduced(5)/*.withHeight(area.getHeight()-)*/);
+    gridEffectCombo.setBounds(area.removeFromRight(80).reduced(5, 8)/*.withHeight(area.getHeight()-)*/);
     gridVolSlider.setBounds( area.removeFromRight(50));
-    gridDurationCombo.setBounds(area.removeFromRight(70).reduced(5)/*.withHeight(area.getHeight()-10)*/);
-    gridSpeedCombo.setBounds(area.removeFromRight(70).reduced(5)/*.withHeight(area.getHeight()-)*/);
+    gridDurationCombo.setBounds(area.removeFromRight(70).reduced(5, 8)/*.withHeight(area.getHeight()-10)*/);
+    gridSpeedCombo.setBounds(area.removeFromRight(70).reduced(5, 8)/*.withHeight(area.getHeight()-)*/);
     gridNumberSlider.setBounds( area.removeFromRight(50)/*.withHeight(area.getHeight()+5)*/);
     
     myLineLabel.setBounds(area.removeFromLeft(25));
-    midiInNote.setBounds(area.removeFromLeft(60).reduced(10));
+    soloButton.setBounds(area.removeFromLeft(40).reduced(10));
  
     
     auto griidbounds =  area.reduced(10, 2);

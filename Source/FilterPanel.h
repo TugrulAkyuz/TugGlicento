@@ -90,12 +90,37 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
         g.setColour(juce::Colours::black);
         g.drawRect(r,2);
         
-        
         g.setColour(juce::Colour(0x998a8a8a));
-        for (int x = 0; x < getWidth(); x += 16*1.618)
-        g.drawLine(x, 0, x, getHeight());
-        for (int y = 0; y < getHeight(); y += 16)
-        g.drawLine(0, y, getWidth(), y);
+        int grid_x = 10;
+        int grid_y = 5;
+        float dashPattern[3];
+        dashPattern[0] = 4.0;
+        dashPattern[1] = 4.0;
+        //            dashPattern[2] = 6.0;
+        int inc = area.getWidth()/grid_x;
+        for(int i = 0 ; i < grid_x ; i++)
+        {
+            
+            Point<float>  start(area.getX() +  i*inc, area.getY() );
+            Point<float>  end(area.getX() + i*inc,  area.getBottom() );
+           
+            g.drawDashedLine(Line<float>(start,end), dashPattern,2, 0.5);
+        }
+         inc = area.getHeight()/grid_y;
+        for(int i = 0 ; i < grid_y ; i++)
+        {
+                Point<float>  start(area.getX() , area.getY() +  i*inc);
+                Point<float>  end(area.getRight() ,  area.getY()+ i*inc);
+      
+       g.drawDashedLine(Line<float>(start,end), dashPattern,2, 0.5);
+            
+        }
+        
+//        g.setColour(juce::Colour(0x998a8a8a));
+//        for (int x = 0; x < getWidth(); x += 16*1.618)
+//        g.drawLine(x, 0, x, getHeight());
+//        for (int y = 0; y < getHeight(); y += 16)
+//        g.drawLine(0, y, getWidth(), y);
         
         p.clear();
         juce::PathStrokeType stroke(3, juce::PathStrokeType::JointStyle::curved,
@@ -282,7 +307,8 @@ public:
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { }
 private:
-
+    Label effectLabel;
+    
     int myLine;
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;

@@ -29,17 +29,34 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     addAndMakeVisible(releaseSlider);
     addAndMakeVisible(envSlider);
     addAndMakeVisible(filterTypeCombo);
-    
+
     addAndMakeVisible(freqResPanel);
     addAndMakeVisible(curvePanel);
     
-    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    addAndMakeVisible(effectLabel);
+    String l;
+    l << "FILTER " << myLine + 1;
+    effectLabel.setText(l, dontSendNotification);
+    effectLabel.setColour(Label::ColourIds::textColourId,colourarray[line_no]);
+    effectLabel.setJustificationType(Justification::centred);
+    
+    cutofSlider.setName("Cutoff");
+    qSlider.setName("Q");
+    attackSlider.setName("Attack");
+    decaySliader.setName("Decay");
+    sustainSlider.setName("Sustain");
+    envSlider.setName("Env");
+    
+    filterTypeCombo.setLookAndFeel(&myLookAndFeel);
+    
+    
+//    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+//    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     
   
 //    attackSlider.setSkewFactor(4);
@@ -106,6 +123,7 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
  
     cutofSlider.setRange (20, 20000, 2);
     cutofSlider.setSkewFactorFromMidPoint(1000);
+
 }
 
 FilterPanel::~FilterPanel()
@@ -131,29 +149,29 @@ void  FilterPanel::paint (juce::Graphics& g)
 void FilterPanel::resized()
 {
     auto allArea =  getLocalBounds();
-    allArea.removeFromTop(20);
+    effectLabel.setBounds(allArea.removeFromTop(30));
     auto right = allArea.removeFromRight(3*allArea.getWidth()/5);
-    right.reduce(10, 10);
-    allArea.reduce(10, 10);
-   
+    right.reduce(10, 0);
+    allArea.reduce(10, 0);
+ 
     
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
+    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
+    qSlider.setBounds(area.reduced(3));
     area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
+    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
+    decaySliader.setBounds(area.reduced(3));
     area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
   //  releaseSlider.setBounds(area);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
     area = allArea.removeFromTop( h);
    
-    filterTypeCombo.setBounds(area.reduced(0, 3));
+    filterTypeCombo.setBounds(area.reduced(0, 13));
     
-    freqResPanel.setBounds(right.removeFromTop(2*h).reduced(0, 3));
-    curvePanel.setBounds(right);
+    freqResPanel.setBounds(right.removeFromTop(2*h).reduced(0, 7));
+    curvePanel.setBounds(right.reduced(0, 7));
 
     
 }
@@ -185,8 +203,11 @@ void  FreqResPanel::paint (juce::Graphics& g)
     auto   responseArea =   getLocalBounds();
     responseArea.reduce(1, 1);
     auto w =  responseArea.getWidth();
+    g.setColour (Colours::black);
+    g.fillRect(responseArea);
     g.setColour (Colours::grey);
     g.drawRoundedRectangle(responseArea.toFloat(), 2.0f, 1.0f);
+
     int grid_x = 10;
     int grid_y = 5;
     float dashPattern[3];

@@ -26,7 +26,7 @@ TugGlicentoAudioProcessorEditor::TugGlicentoAudioProcessorEditor (TugGlicentoAud
     }
     //addAndMakeVisible(globalPanel);
     addAndMakeVisible(effectPanel);
-    setSize (900, 400);
+    setSize (900, 420);
 }
 
 TugGlicentoAudioProcessorEditor::~TugGlicentoAudioProcessorEditor()

@@ -197,19 +197,25 @@ public:
     
 private:
 
+
     int myLine;
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
-    
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
+    ComboBox modeCombo;
+    CustomRoratySlider driveSlider;
+    CustomRoratySlider mixSliader;
+    CustomRoratySlider distthresholdSliader;
+    CustomRoratySlider denemeSliader;
 
+    std::unique_ptr  <AudioProcessorValueTreeState::ComboBoxAttachment> modeComboAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> driveSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> mixSliaderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> distthresholdSliaderAttachment;
+    
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> denemeSliaderAttachment;
+    
+    
     Label effectLabel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DistortionPanel)
 };
@@ -230,15 +236,23 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
+    CustomRoratySlider depthSlider;
+    CustomRoratySlider feedbackSlider;
     
-    CustomRoratySlider attackSlider;
+    CustomRoratySlider mixSlider;
     CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
+    CustomRoratySlider rateSlider;
 
+
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> depthSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> feedbackSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> decaySliaderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> rateSliderAttachment;
+    
     Label effectLabel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaserPanel)
 };
+
+
+
