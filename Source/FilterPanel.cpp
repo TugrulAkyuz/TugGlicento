@@ -47,6 +47,8 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     sustainSlider.setName("Sustain");
     envSlider.setName("Env");
     
+//    filterTypeCombo.setColour(int colourID, Colour newColour)
+//    Colours::orange.withAlpha(0.3f)
     filterTypeCombo.setLookAndFeel(&myLookAndFeel);
     
     
@@ -160,6 +162,10 @@ void FilterPanel::resized()
     cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
     qSlider.setBounds(area.reduced(3));
     area = allArea.removeFromTop( h);
+    
+    filterTypeCombo.setBounds(area.reduced(0, 13));
+    area = allArea.removeFromTop( h);
+    
     attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
     decaySliader.setBounds(area.reduced(3));
     area = allArea.removeFromTop( h);
@@ -168,7 +174,7 @@ void FilterPanel::resized()
     envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2).reduced(3));
     area = allArea.removeFromTop( h);
    
-    filterTypeCombo.setBounds(area.reduced(0, 13));
+  
     
     freqResPanel.setBounds(right.removeFromTop(2*h).reduced(0, 7));
     curvePanel.setBounds(right.reduced(0, 7));

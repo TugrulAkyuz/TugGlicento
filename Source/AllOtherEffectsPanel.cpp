@@ -369,13 +369,8 @@ void DecimatorPanel::resized()
 
 PitchShifterPanel::PitchShifterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    addAndMakeVisible(cutofSlider);
-    addAndMakeVisible(qSlider);
-    addAndMakeVisible(attackSlider);
-    addAndMakeVisible(decaySliader);
-    addAndMakeVisible(sustainSlider);
-    addAndMakeVisible(releaseSlider);
-    addAndMakeVisible(envSlider);
+    addAndMakeVisible(pitchSlider);
+
     
 //    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
 //    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
@@ -384,7 +379,11 @@ PitchShifterPanel::PitchShifterPanel(TugGlicentoAudioProcessor& p ,int line_no) 
 //    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
 //    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
 //    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[PITCHVALUE]<<myLine;
+    pitchSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, pitchSlider);
     
     addAndMakeVisible(effectLabel);
     String l;
@@ -420,16 +419,8 @@ void PitchShifterPanel::resized()
     allArea.reduce(10, 0);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
-    area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    pitchSlider.setBounds(area.removeFromLeft(allArea.getWidth()));
+
  
 
     

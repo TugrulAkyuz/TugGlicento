@@ -72,7 +72,7 @@ valueTreeState(*this, &undoManager)
         tmp_s.clear();
         tmp_s << valueTreeNames[CUTOFF] << j;
         //valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,20,20000.0f,200));
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s, NormalisableRange<float>(20,20000.0f,1.0f,0.25),200));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s, NormalisableRange<float>(20,20000.0f,1.0f,0.25),pow(2.0f,j)*200));
         cutOffAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
@@ -244,6 +244,11 @@ valueTreeState(*this, &undoManager)
         tmp_s << valueTreeNames[DISTTRESHOLD]<<j;
         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,3));
         distthresholdAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PITCHVALUE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,-3,3,0));
+        pitchValueAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         // PitchShifter
 
@@ -426,16 +431,21 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         delayVariables[i].mDelayRead = 0;
         distProcessor[i] = new Distortion();
         
-    }
-    
-    pitchshiftVariables.mCircularBufferLenght =sampleRate;
-    pitchshiftVariables.mCicularBufferWriteHead = 0;
-    for(auto channel = 0 ; channel < 2 ; channel++)
-    {
-        pitchshiftVariables.mCircularBuffer[channel].resize(pitchshiftVariables.mCircularBufferLenght,0);
+        myPitchShifterPhasor[i] = new MyPitchShifterPhasor(sampleRate);
+        
+        pitchshiftVariables[i].mCircularBufferLenght =sampleRate;
+        pitchshiftVariables[i].mCicularBufferWriteHead = 0;
 
+        for(auto channel = 0 ; channel < 2 ; channel++)
+        {
+            pitchshiftVariables[i].mCircularBuffer[channel].resize(pitchshiftVariables[i].mCircularBufferLenght,0);
+        
+        }
+        
     }
     
+
+    block_len = mySampleRate /100;
     
     waveshape.prepare(spec);
     waveshape.reset();
@@ -847,73 +857,129 @@ void TugGlicentoAudioProcessor::processBlockFlanger(juce::AudioBuffer<float>& bu
 void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
 
-   
-    auto r =  log(2);
-    float pitch_value = 0.5;
-    int block_len = 8;
-
-    
-
-        
+//    for (auto i = 0; i < buffer.getNumSamples(); ++i)
+//    {
+//        float x1 = myPitchShifterPhasor[line_no]->getPhasorSample(100,0);
+//        float x2 = myPitchShifterPhasor[line_no]->getPhasorSample(100,1);
+//        float traingelValue = (x1 < 0.5f) ? x1*2.0f : (1.0f-x1)*2.0f;
+//        traingelValue += (x2 < 0.5f) ? x2*2.0f : (1.0f-x2)*2.0f;
+//        DBG(traingelValue);
+//    }
+    int start_index = pitchshiftVariables[line_no].mCicularBufferWriteHead;
         for (auto i = 0; i < buffer.getNumSamples(); ++i)
         {
             for (int channel = 0; channel < getNumInputChannels(); ++channel)
-                pitchshiftVariables.mCircularBuffer[channel].at(pitchshiftVariables.mCicularBufferWriteHead) =  buffer.getSample(channel, i);
-            pitchshiftVariables.mCicularBufferWriteHead++;
-            pitchshiftVariables.mCicularBufferWriteHead %= pitchshiftVariables.mCircularBufferLenght;
-    
+            {
+                 pitchshiftVariables[line_no].mCircularBuffer[channel].at(pitchshiftVariables[line_no].mCicularBufferWriteHead) = copyBuffer[line_no].getSample(channel,i);
+                copyBuffer[line_no].setSample(channel, i,0.0);
+            }
+            pitchshiftVariables[line_no].mCicularBufferWriteHead++;
+            pitchshiftVariables[line_no].mCicularBufferWriteHead %= pitchshiftVariables[line_no].mCircularBufferLenght;
+            
         }
+ 
+    float phasorFreq = 1000*(1.0f-pow(2,*pitchValueAtomic[line_no]))/delayWindow;
    
-
-    
-    for (int channel = 0; channel < getNumInputChannels(); ++channel) {
-       
-        
-        float start_index = pitchshiftVariables.mCicularBufferWriteHead;
-        float fade_out_index = start_index +  4*log(pitch_value)/r;
-        
-        float first_fade_out_index = fade_out_index;
-        float first_start_index = start_index;
-        
-        if(fade_out_index < 0) fade_out_index = fade_out_index +  pitchshiftVariables.mCircularBufferLenght;
-        float incr = pitch_value;
-        int b = 0;
+ 
+   
+    if(*pitchValueAtomic[line_no] != 0)
+    for(int w = 0 ; w < 2 ; w++)
         for (auto i = 0; i < buffer.getNumSamples(); ++i)
         {
+            double si = myPitchShifterPhasor[line_no]->getPhasorSample(phasorFreq,w);
+            double cosvalue = (si - 0.5f)*M_PI;
+            cosvalue = cos(cosvalue);
+            double traingelValue = (si < 0.5f) ? si*2.0f : (1.0f-si)*2.0f;
             
-
-            float v = b*1.0f/(block_len/2);
-            int v0 =  fade_out_index;
-            int v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
-            float t = fade_out_index - v0;
-            float red_sample = (1- v)*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
-                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
-             v0 =  start_index;
-             v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
-             t = start_index - v0;
-            float green_sample = (v)*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
-                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
             
-            buffer.setSample(channel, i, red_sample + green_sample);
-            b++;
-            b %= block_len/2;
-            if(b == 0)
+            float smapleIndexf  = start_index + i - si * mySampleRate*delayWindow/1000;
+            if(smapleIndexf >= pitchshiftVariables[line_no].mCircularBufferLenght)
+                smapleIndexf = smapleIndexf - pitchshiftVariables[line_no].mCircularBufferLenght;
+            if(smapleIndexf <= 0.0f)
+                smapleIndexf = smapleIndexf + pitchshiftVariables[line_no].mCircularBufferLenght - 1;
+            
+            int v0 = smapleIndexf;
+            int v1 = (v0 + 1) % pitchshiftVariables[line_no].mCircularBufferLenght;
+            float t = smapleIndexf - v0;
+          
+            for (int channel = 0; channel < getNumInputChannels(); ++channel)
             {
-                first_start_index += block_len/2;
-                first_fade_out_index += block_len/2;
-                start_index = first_start_index - incr;
-                fade_out_index = first_fade_out_index - incr;
+                double sample  =  linearInterpol(pitchshiftVariables[line_no].mCircularBuffer[channel].at(v0),
+                                       pitchshiftVariables[line_no].mCircularBuffer[channel].at(v1), t);
+                
+                copyBuffer[line_no].addSample(channel, i,traingelValue*sample);
+       
+//                double d = copyBuffer[line_no].getSample(channel, i) + traingelValue*sample;
+//                copyBuffer[line_no].setSample(channel, i,traingelValue*sample);
+//                 if(channel == 0 && w == 1)
+//                copyBuffer[line_no].addSample(channel, i,traingelValue*sample);
+//                if(channel == 1 && w == 0)
+//               copyBuffer[line_no].addSample(channel, i,traingelValue*sample);
+                
             }
-            fade_out_index += incr;
-            if(fade_out_index > pitchshiftVariables.mCircularBufferLenght - 1)
-                fade_out_index =  fade_out_index -  (pitchshiftVariables.mCircularBufferLenght - 1);
-            start_index += incr;
-            if(start_index > pitchshiftVariables.mCircularBufferLenght - 1)
-                start_index =  start_index -  (pitchshiftVariables.mCircularBufferLenght - 1);
-           
+            
+        }
+    else
+    {
+        for (auto i = 0; i < buffer.getNumSamples(); ++i)
+        for (int channel = 0; channel < getNumInputChannels(); ++channel)
+        {
+            int idx = (start_index + i)% pitchshiftVariables[line_no].mCircularBufferLenght;
+            copyBuffer[line_no].addSample(channel, i,pitchshiftVariables[line_no].mCircularBuffer[channel].at(idx) );
         
         }
     }
+//test
+
+    
+//    for (int channel = 0; channel < getNumInputChannels(); ++channel) {
+//
+//
+//        for (auto i = 0; i < buffer.getNumSamples(); ++i)
+//        {
+//
+//
+//            if(fade_out_index_c[channel] >= pitchshiftVariables.mCircularBufferLenght )
+//                fade_out_index_c[channel] =  fade_out_index_c[channel] -  (pitchshiftVariables.mCircularBufferLenght -1);
+//            if(fade_out_index_c[channel] <0 )
+//                fade_out_index_c[channel] =  fade_out_index_c[channel] +  (pitchshiftVariables.mCircularBufferLenght  - 1);
+//
+//            if(start_index_c[channel] >= pitchshiftVariables.mCircularBufferLenght )
+//                start_index_c[channel] =  start_index_c[channel] -  (pitchshiftVariables.mCircularBufferLenght -1);
+//            if(start_index_c[channel] < 0 )
+//                start_index_c[channel] =  start_index_c[channel] + (pitchshiftVariables.mCircularBufferLenght - 1);
+//
+//
+//            float v = b[channel]*1.0f/(block_len -1);
+//            int v0 =  fade_out_index_c[channel];
+//            int v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
+//            float t = fade_out_index_c[channel] - v0;
+//            float red_sample = (1- v)*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
+//                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
+//             v0 =  start_index_c[channel];
+//             v1 = (v0 + 1) % pitchshiftVariables.mCircularBufferLenght;
+//             t = start_index_c[channel] - v0;
+//            float green_sample = v*linearInterpol(pitchshiftVariables.mCircularBuffer[channel].at(v0),
+//                           pitchshiftVariables.mCircularBuffer[channel].at(v1), t);
+//
+//            copyBuffer[line_no].setSample(channel, i, red_sample + green_sample);
+//            b[channel]++;
+//            b[channel] %= block_len;
+//            fade_out_index_c[channel] += incr;
+//            start_index_c[channel] += incr;
+//
+//            if(b[channel] == 0)
+//            {
+//                start_index_c[channel] = start_index_c[channel] - block_len*incr + block_len;
+//                fade_out_index_c[channel] = start_index_c[channel] +   (block_len/2)*log(pitch_value)/r;
+//
+//            }
+//
+//
+//
+//
+//        }
+//    }
     
     
     

@@ -172,14 +172,9 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
+    CustomRoratySlider pitchSlider;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> pitchSliderAttachment;
     
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
 
     Label effectLabel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PitchShifterPanel)

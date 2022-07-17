@@ -288,7 +288,7 @@ private:
         g.setColour (Colour(25,25,25));
         g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
 
-        g.setColour (juce::Colours::orange);
+        g.setColour (juce::Colours::orange.withAlpha(0.3f));
         g.drawRoundedRectangle (boxBounds.toFloat().reduced (0.5f, 0.5f), cornerSize, 1.0f);
 
         Rectangle<int> arrowZone (width - 15, 0, 15, height);

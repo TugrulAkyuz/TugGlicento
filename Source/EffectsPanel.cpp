@@ -132,52 +132,79 @@ void EffectPanel::resized()
         decimatorPanel.getUnchecked(i)->setVisible(false);
         phaserPanel.getUnchecked(i)->setVisible(false);
         distortionPanel.getUnchecked(i)->setVisible(false);
+        pitchShifterPanel.getUnchecked(i)->setVisible(false);
         
     }
     lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    
+    Component *x ;
     for(auto i =  0; i < numOfLine ; i++ )
     {
         area = allArea.removeFromLeft(100);
-        if(audioProcessor.selectedEffect[i] == REVERB)
-           {
-            reverbePanel.getUnchecked(i)->setBounds(area);
-           reverbePanel.getUnchecked(i)->setVisible(true);
-           }
-        if(audioProcessor.selectedEffect[i] == DELAY)
-            {
-                delayPanel.getUnchecked(i)->setBounds(area);
-                delayPanel.getUnchecked(i)->setVisible(true);
-                
-            }
-        if(audioProcessor.selectedEffect[i] == CHORUS)
-           {
-               chorusPanel.getUnchecked(i)->setBounds(area);
-               chorusPanel.getUnchecked(i)->setVisible(true);
-               
-           }
-        if(audioProcessor.selectedEffect[i] == DECIMATOR)
-          {
-              decimatorPanel.getUnchecked(i)->setBounds(area);
-              decimatorPanel.getUnchecked(i)->setVisible(true);
-              
-          }
-        if(audioProcessor.selectedEffect[i] == PHASER)
-          {
-              phaserPanel.getUnchecked(i)->setBounds(area);
-              phaserPanel.getUnchecked(i)->setVisible(true);
-              
-          }
+        if(audioProcessor.selectedEffect[i] == REVERB) x = reverbePanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == DELAY) x = delayPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == CHORUS) x = chorusPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == DECIMATOR) x = decimatorPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == PHASER) x = phaserPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == DISTORTION) x = distortionPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == FLANGER) x = distortionPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == PITCHSHIFTER) x = pitchShifterPanel.getUnchecked(i);
+ 
         
-        if(audioProcessor.selectedEffect[i] == DISTORTION)
-          {
-              distortionPanel.getUnchecked(i)->setBounds(area);
-              distortionPanel.getUnchecked(i)->setVisible(true);
-              
-          }
-       
+        x->setBounds(area);
+        x->setVisible(true);
         
     }
+    
+    
+    
+//    for(auto i =  0; i < numOfLine ; i++ )
+//    {
+//        area = allArea.removeFromLeft(100);
+//        if(audioProcessor.selectedEffect[i] == REVERB)
+//           {
+//
+//            reverbePanel.getUnchecked(i)->setBounds(area);
+//           reverbePanel.getUnchecked(i)->setVisible(true);
+//           }
+//        if(audioProcessor.selectedEffect[i] == DELAY)
+//            {
+//                delayPanel.getUnchecked(i)->setBounds(area);
+//                delayPanel.getUnchecked(i)->setVisible(true);
+//
+//            }
+//        if(audioProcessor.selectedEffect[i] == CHORUS)
+//           {
+//               chorusPanel.getUnchecked(i)->setBounds(area);
+//               chorusPanel.getUnchecked(i)->setVisible(true);
+//
+//           }
+//        if(audioProcessor.selectedEffect[i] == DECIMATOR)
+//          {
+//              decimatorPanel.getUnchecked(i)->setBounds(area);
+//              decimatorPanel.getUnchecked(i)->setVisible(true);
+//
+//          }
+//        if(audioProcessor.selectedEffect[i] == PHASER)
+//          {
+//              phaserPanel.getUnchecked(i)->setBounds(area);
+//              phaserPanel.getUnchecked(i)->setVisible(true);
+//
+//          }
+//
+//        if(audioProcessor.selectedEffect[i] == DISTORTION)
+//          {
+//              distortionPanel.getUnchecked(i)->setBounds(area);
+//              distortionPanel.getUnchecked(i)->setVisible(true);
+//
+//          }
+//        if(audioProcessor.selectedEffect[i] == PITCHSHIFTER)
+//          {
+//              pitchShifterPanel.getUnchecked(i)->setBounds(area);
+//              pitchShifterPanel.getUnchecked(i)->setVisible(true);
+//
+//          }
+//
+//    }
     
 }
 

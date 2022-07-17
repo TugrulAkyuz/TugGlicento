@@ -66,11 +66,11 @@ enum valueTreeNamesEnum
     BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
     CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH,
     DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC,PHASERDEPTH,PHASERPEEDBAC,PHASERMIX,PHASERDECAY,PHASERRATE,
-    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME
+    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME,PITCHVALUE
 };
 enum processFunctionEnum
 {
-    REVERB,DELAY,CHORUS,DECIMATOR,DISTORTION,PHASER,FLANGER,WAVESHAPER
+    REVERB,DELAY,CHORUS,DECIMATOR,DISTORTION,PHASER,FLANGER,PITCHSHIFTER
 };
 
 enum
@@ -85,7 +85,7 @@ enum
 const StringArray distChoicesStr = {"Soft","ArcTan","Hard","Square","Cubic","FoldB","gloubiApp"};
 
 const StringArray filterChoicesStr = {"LowPass","BandPass","HighPass"};
-const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DECIMATOR","DISTORTION","PHASER","FLANGER","WAVESHAPER"};
+const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DECIMATOR","DISTORTION","PHASER","FLANGER","PITCHSHIFTER"};
 
 struct filter_coeff_s
 {
@@ -96,10 +96,12 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME","PITCHVALUE"};
 //==============================================================================
 /**
 */
+
+
 class TugGlicentoAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -207,6 +209,9 @@ public:
     std::atomic<float> * pitchShiftersemitonesAtomic[numOfLine];
     std::atomic<float> * pitchShiftercentsAtomic[numOfLine];
     std::atomic<float> * pitchShifterwet_dryAtomic[numOfLine];
+    
+    std::atomic<float> *pitchValueAtomic[numOfLine];
+    
     std::unique_ptr<AudioParameterInt *>  deneme[numOfLine];
     juce::AudioParameterBool* pitchShifterformatAtomic[numOfLine];
     
@@ -267,6 +272,19 @@ private:
     void processBlockPitchShifter(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockReapeater(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
 
+    float phasor_phase[2] = {0.0f,0.5f};
+    float delayWindow = 100 ;//ms
+//    float getPhasorSample(float freq , int w)
+//    {
+//        float incr = freq/mySampleRate;
+//        if(incr == 0) return 0;
+//        phasor_phase[w] = phasor_phase[w] + incr;
+//        if(phasor_phase[w]  > 1.0f)  phasor_phase[w]  = phasor_phase[w]  - 1.0f;
+//        if(phasor_phase[w]  < 0.0f)  phasor_phase[w]  = phasor_phase[w]  + 1.0f;
+//        return  phasor_phase[w] ;
+//    }
+    
+    ScopedPointer<MyPitchShifterPhasor> myPitchShifterPhasor[numOfLine];
     
     std::unique_ptr <juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear>> mDelayLine[numOfLine];
     juce::dsp::Chorus<float> chorus[numOfLine];
@@ -306,13 +324,18 @@ private:
         int mCircularBufferLenght;
         
         
-    }pitchshiftVariables;
+    }pitchshiftVariables[numOfLine];
     
     double linearInterpol(float v0, float v1, float t)
     {
         return (1 - t) * v0 + t * v1;
     }
+    int b[2] = {};
+    float start_index_c[2] = {};
     
+    float fade_out_index_c[2] = {};
+    int block_len ;
+    float pitch_value = 0.5;
     //==============================================================================
 
     
