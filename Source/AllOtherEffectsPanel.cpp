@@ -298,24 +298,20 @@ void ChorusPanel::resized()
 
 DecimatorPanel::DecimatorPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    addAndMakeVisible(cutofSlider);
-    addAndMakeVisible(qSlider);
-    addAndMakeVisible(attackSlider);
-    addAndMakeVisible(decaySliader);
-    addAndMakeVisible(sustainSlider);
-    addAndMakeVisible(releaseSlider);
-    addAndMakeVisible(envSlider);
-    
-    
+    addAndMakeVisible(rateSlider);
+    addAndMakeVisible(bitSlider);
 
+    rateSlider.setName("Rate");
+    bitSlider.setName("Bit");
     
-//    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[RATEDECIMATOR]<<myLine;
+    rateSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, rateSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[BITDECIMATOR]<<myLine;
+    bitSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, bitSlider);
 
     addAndMakeVisible(effectLabel);
     String l;
@@ -351,16 +347,10 @@ void DecimatorPanel::resized()
     allArea.reduce(10, 0);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    cutofSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    qSlider.setBounds(area);
+    rateSlider.setBounds(area);
     area = allArea.removeFromTop( h);
-    attackSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    decaySliader.setBounds(area);
-    area = allArea.removeFromTop( h);
-    sustainSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
-    releaseSlider.setBounds(area);
-    area = allArea.removeFromTop( h);
-    envSlider.setBounds(area.removeFromLeft(allArea.getWidth()/2));
+    bitSlider.setBounds(area);
+
  
 
     

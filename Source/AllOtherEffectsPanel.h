@@ -143,14 +143,11 @@ private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
 
-    CustomRoratySlider cutofSlider;
-    CustomRoratySlider qSlider;
-    
-    CustomRoratySlider attackSlider;
-    CustomRoratySlider decaySliader;
-    CustomRoratySlider sustainSlider;
-    CustomRoratySlider releaseSlider;
-    CustomRoratySlider envSlider;
+    CustomRoratySlider rateSlider;
+    CustomRoratySlider bitSlider;
+
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> rateSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> bitSliderAttachment;
 
     Label effectLabel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecimatorPanel)
