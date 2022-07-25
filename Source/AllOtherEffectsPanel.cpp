@@ -361,14 +361,7 @@ PitchShifterPanel::PitchShifterPanel(TugGlicentoAudioProcessor& p ,int line_no) 
 {
     addAndMakeVisible(pitchSlider);
 
-    
-//    cutofSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    qSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    attackSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    decaySliader.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    sustainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    releaseSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
-//    envSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
+
     juce::String  tmp_s;
  
     tmp_s.clear();
@@ -608,3 +601,96 @@ void PhaserPanel::resized()
 
 }
 
+CombFilterPanel::CombFilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
+{
+    addAndMakeVisible(combFilterlider);
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[COBFILTERDELAY]<<myLine;
+    combFilterliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, combFilterlider);
+    
+    addAndMakeVisible(effectLabel);
+    String l;
+    l << "COMB FILTER " << myLine + 1;
+    effectLabel.setText(l, dontSendNotification);
+    effectLabel.setColour(Label::ColourIds::textColourId,colourarray[line_no]);
+    effectLabel.setJustificationType(Justification::centred);
+}
+CombFilterPanel::~CombFilterPanel()
+{
+    
+}
+void  CombFilterPanel::paint (juce::Graphics& g)
+{
+    g.fillAll (backgroundColor);
+    String l = std::to_string(myLine) ;
+     
+    g.setColour (juce::Colours::orange);
+    auto bounds = getLocalBounds().toFloat().reduced(2, 2);
+    
+    g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
+  //  g.fillAll ( ColorScheme::getSliderBorderColor());
+    
+    
+    
+  //  g.fillAll ( ColorScheme::getSliderBorderColor());
+}
+void CombFilterPanel::resized()
+{
+    auto allArea = getLocalBounds();
+    effectLabel.setBounds(allArea.removeFromTop(30));
+    allArea.reduce(10, 0);
+    auto h =  allArea.getHeight()/4;
+    auto area = allArea.removeFromTop( h);
+    combFilterlider.setBounds(area.removeFromLeft(allArea.getWidth()));
+
+}
+
+
+
+RepeaterPanel::RepeaterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
+{
+    addAndMakeVisible(repeaterDividerlider);
+    juce::String  tmp_s;
+ 
+    tmp_s.clear();
+    tmp_s << valueTreeNames[REPEATERDIVIDE]<<myLine;
+    repeaterDividerliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, repeaterDividerlider);
+    
+    addAndMakeVisible(effectLabel);
+    String l;
+    l << "REPEATER " << myLine + 1;
+    effectLabel.setText(l, dontSendNotification);
+    effectLabel.setColour(Label::ColourIds::textColourId,colourarray[line_no]);
+    effectLabel.setJustificationType(Justification::centred);
+}
+RepeaterPanel::~RepeaterPanel()
+{
+    
+}
+void  RepeaterPanel::paint (juce::Graphics& g)
+{
+    g.fillAll (backgroundColor);
+    String l = std::to_string(myLine) ;
+     
+    g.setColour (juce::Colours::orange);
+    auto bounds = getLocalBounds().toFloat().reduced(2, 2);
+    
+    g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
+  //  g.fillAll ( ColorScheme::getSliderBorderColor());
+    
+    
+    
+  //  g.fillAll ( ColorScheme::getSliderBorderColor());
+}
+void RepeaterPanel::resized()
+{
+    auto allArea = getLocalBounds();
+    effectLabel.setBounds(allArea.removeFromTop(30));
+    allArea.reduce(10, 0);
+    auto h =  allArea.getHeight()/4;
+    auto area = allArea.removeFromTop( h);
+    repeaterDividerlider.setBounds(area.removeFromLeft(allArea.getWidth()));
+
+}

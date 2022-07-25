@@ -262,6 +262,18 @@ valueTreeState(*this, &undoManager)
         tmp_s << valueTreeNames[BITDECIMATOR]<<j;
         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterInt>(tmp_s, tmp_s,1,16,16));
         bitDecimatorAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+     
+        
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[COBFILTERDELAY]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0,10,0));
+        comFilterAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
+        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[REPEATERDIVIDE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterInt>(tmp_s, tmp_s,1,16,1));
+        repeaterDivideAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         // PitchShifter
 
@@ -321,6 +333,7 @@ valueTreeState(*this, &undoManager)
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockPhaser);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockFlanger);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockPitchShifter);
+    myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockCombFilter);
     myEffecrBankFunctions.push_back(&TugGlicentoAudioProcessor::processBlockReapeater);
     waveshape.functionToUse = [] (float x)
     {
@@ -454,7 +467,9 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
             pitchshiftVariables[i].mCircularBuffer[channel].resize(pitchshiftVariables[i].mCircularBufferLenght,0);
         
         }
-        
+        reapeaterData[i].counter = -1;
+        reapeaterData[i].bufferStart = -1;
+        reapeaterData[i].bufferEnd = -1;
     }
     
 
@@ -587,10 +602,13 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for(int s = 0 ; s < buffer.getNumSamples();  s++)/**ppq ye bakma code*/
     {
         
+        {
+        /* burası doğru yerde mi?*/
         for(int i = 0 ; i< numOfLine ;i++)
         for(int j = 0 ; j< 2 ;j++)
         *cb_ptr[i][j] =  *buf_ptr[j];
-        
+        /* burası doğru yerde mi?*/
+        }
         
         measureSample++;
         measureSample %= (int)(4*mySampleRate/mBps);
@@ -626,6 +644,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 effectState[i] = false;
                 lineGainSmooth[i].setTargetValue(0.0f);
                 adsr[i].noteOff();
+                reapeaterData[i].bufferEnd = s;
             }
             if(stpSample[i] == 0)
             {
@@ -639,6 +658,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                     effectState[i] = true;
                     lineGainSmooth[i].setTargetValue(1.0f);
                     adsr[i].noteOn();
+                    reapeaterData[i].bufferStart = s;
                 }
                 
             }
@@ -957,6 +977,96 @@ void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float
 }
 void TugGlicentoAudioProcessor::processBlockReapeater(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
+    int write = pitchshiftVariables[line_no].mCicularBufferWriteHead;
+    for (auto i = 0; i < buffer.getNumSamples(); ++i)
+    {
+
+        if(i == reapeaterData[line_no].bufferStart)
+        {
+            reapeaterData[line_no].bufferStart = -1;
+            reapeaterData[line_no].counter = stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]);
+    
+        }
+        if(i == reapeaterData[line_no].bufferEnd)
+        {
+            reapeaterData[line_no].bufferEnd = -1;
+            reapeaterData[line_no].counter = -1;
+    
+        }
+        if(reapeaterData[line_no].counter == -1) continue;
+        if(reapeaterData[line_no].counter == 0)
+        {
+            int idx = pitchshiftVariables[line_no].mCicularBufferWriteHead - stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]) ;
+            if(idx < 0 ) idx = idx + pitchshiftVariables[line_no].mCircularBufferLenght;
+            for (int channel = 0; channel < getNumInputChannels(); ++channel)
+            {
+                pitchshiftVariables[line_no].mCircularBuffer[channel].at(pitchshiftVariables[line_no].mCicularBufferWriteHead) =
+                pitchshiftVariables[line_no].mCircularBuffer[channel].at(idx);
+               copyBuffer[line_no].setSample(channel, i, pitchshiftVariables[line_no].mCircularBuffer[channel].at(pitchshiftVariables[line_no].mCicularBufferWriteHead));
+            }
+            pitchshiftVariables[line_no].mCicularBufferWriteHead++;
+            pitchshiftVariables[line_no].mCicularBufferWriteHead %= pitchshiftVariables[line_no].mCircularBufferLenght;
+            continue;
+            
+        }
+        else
+        {
+            for (int channel = 0; channel < getNumInputChannels(); ++channel)
+            {
+                 pitchshiftVariables[line_no].mCircularBuffer[channel].at(pitchshiftVariables[line_no].mCicularBufferWriteHead) = copyBuffer[line_no].getSample(channel,i);
+              
+            }
+            pitchshiftVariables[line_no].mCicularBufferWriteHead++;
+            pitchshiftVariables[line_no].mCicularBufferWriteHead %= pitchshiftVariables[line_no].mCircularBufferLenght;
+        }
+
+        reapeaterData[line_no].counter--;
+        
+       
+        
+    }
+
+    
+    
+}
+void TugGlicentoAudioProcessor::processBlockCombFilter(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
+{
+    int start_index = pitchshiftVariables[line_no].mCicularBufferWriteHead;
+    for (auto i = 0; i < buffer.getNumSamples(); ++i)
+    {
+        for (int channel = 0; channel < getNumInputChannels(); ++channel)
+        {
+             pitchshiftVariables[line_no].mCircularBuffer[channel].at(pitchshiftVariables[line_no].mCicularBufferWriteHead) = copyBuffer[line_no].getSample(channel,i);
+            copyBuffer[line_no].setSample(channel, i,0.0);
+        }
+        pitchshiftVariables[line_no].mCicularBufferWriteHead++;
+        pitchshiftVariables[line_no].mCicularBufferWriteHead %= pitchshiftVariables[line_no].mCircularBufferLenght;
+        
+    }
+    for (auto i = 0; i < buffer.getNumSamples(); ++i)
+    {
+
+        float smapleIndexf  = start_index + i - mySampleRate**comFilterAtomic[line_no]/1000;
+        if(smapleIndexf >= pitchshiftVariables[line_no].mCircularBufferLenght)
+            smapleIndexf = smapleIndexf - pitchshiftVariables[line_no].mCircularBufferLenght;
+        if(smapleIndexf <= 0.0f)
+            smapleIndexf = smapleIndexf + pitchshiftVariables[line_no].mCircularBufferLenght - 1;
+        
+        int v0 = smapleIndexf;
+        int v1 = (v0 + 1) % pitchshiftVariables[line_no].mCircularBufferLenght;
+        float t = smapleIndexf - v0;
+      
+        for (int channel = 0; channel < getNumInputChannels(); ++channel)
+        {
+            double sample  =  pitchshiftVariables[line_no].mCircularBuffer[channel].at((start_index + i)%pitchshiftVariables[line_no].mCircularBufferLenght) + linearInterpol(pitchshiftVariables[line_no].mCircularBuffer[channel].at(v0),
+                                   pitchshiftVariables[line_no].mCircularBuffer[channel].at(v1), t);
+            
+            copyBuffer[line_no].setSample(channel, i,sample);
+   
+
+        }
+        
+    }
  
 }
 void TugGlicentoAudioProcessor::processBlockFilter (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
@@ -986,4 +1096,5 @@ void TugGlicentoAudioProcessor::processBlockFilter (juce::AudioBuffer<float>& bu
     
 
 }
+
 

@@ -246,5 +246,57 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaserPanel)
 };
 
+class CombFilterPanel : public Component
+{
+public:
+    CombFilterPanel(TugGlicentoAudioProcessor& p , int line_no);
+   
+    ~CombFilterPanel();
+    void  paint (juce::Graphics& g) override;
+    void resized() override;
+ 
+    
+private:
+
+    int myLine;
+    MyLookAndFeel myLookAndFeel;
+    TugGlicentoAudioProcessor& audioProcessor;
+
+    CustomRoratySlider combFilterlider;
+
+
+
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> combFilterliderAttachment;
+
+    
+    Label effectLabel;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CombFilterPanel)
+};
+
+class RepeaterPanel : public Component
+{
+public:
+    RepeaterPanel(TugGlicentoAudioProcessor& p , int line_no);
+   
+    ~RepeaterPanel();
+    void  paint (juce::Graphics& g) override;
+    void resized() override;
+ 
+    
+private:
+
+    int myLine;
+    MyLookAndFeel myLookAndFeel;
+    TugGlicentoAudioProcessor& audioProcessor;
+
+    CustomRoratySlider repeaterDividerlider;
+
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> repeaterDividerliderAttachment;
+
+    
+    Label effectLabel;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RepeaterPanel)
+};
+
 
 

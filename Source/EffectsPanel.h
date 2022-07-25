@@ -43,5 +43,9 @@ private:
     juce::OwnedArray< DistortionPanel > distortionPanel;
     juce::OwnedArray< PhaserPanel > phaserPanel;
     
+    juce::OwnedArray< RepeaterPanel > repeaterPanel;
+    juce::OwnedArray< CombFilterPanel > combFilterPanel;
+    
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EffectPanel)
 };

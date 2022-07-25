@@ -66,11 +66,11 @@ enum valueTreeNamesEnum
     BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
     CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH,
     DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC,PHASERDEPTH,PHASERPEEDBAC,PHASERMIX,PHASERDECAY,PHASERRATE,
-    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME,PITCHVALUE,RATEDECIMATOR,BITDECIMATOR
+    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME,PITCHVALUE,RATEDECIMATOR,BITDECIMATOR,COBFILTERDELAY,REPEATERDIVIDE
 };
 enum processFunctionEnum
 {
-    REVERB,DELAY,CHORUS,DECIMATOR,DISTORTION,PHASER,FLANGER,PITCHSHIFTER
+    REVERB,DELAY,CHORUS,DECIMATOR,DISTORTION,PHASER,FLANGER,PITCHSHIFTER,COMBFILTER,REPEATER
 };
 
 enum
@@ -85,7 +85,7 @@ enum
 const StringArray distChoicesStr = {"Soft","ArcTan","Hard","Square","Cubic","FoldB","gloubiApp"};
 
 const StringArray filterChoicesStr = {"LowPass","BandPass","HighPass"};
-const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DECIMATOR","DISTORTION","PHASER","FLANGER","PITCHSHIFTER"};
+const StringArray effectChoicesStr = {"REVERB","DELAY","CHORUS","DECIMATOR","DISTORTION","PHASER","FLANGER","PITCHSHIFTER","COMBFILTER","REPEATER"};
 
 struct filter_coeff_s
 {
@@ -96,7 +96,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME","PITCHVALUE","RATEDECIMATOR","BITDECIMATOR"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME","PITCHVALUE","RATEDECIMATOR","BITDECIMATOR","COBFILTERDELAY","REPEATERDIVIDE"};
 //==============================================================================
 /**
 */
@@ -201,6 +201,10 @@ public:
     std::atomic<float> * distDriveAtomic[numOfLine];
     std::atomic<float> * distMixAtomic[numOfLine];
     std::atomic<float> * distthresholdAtomic[numOfLine];
+    
+    std::atomic<float> * comFilterAtomic[numOfLine];
+    float combFilterDelayedSample[2][numOfLine];
+    std::atomic<float> * repeaterDivideAtomic[numOfLine];
 
     
     //std::unique_ptr<RubberBandPitchShifter> pitchShifter[numOfLine];
@@ -273,6 +277,7 @@ private:
     void processBlockPhaser (juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockFlanger(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockPitchShifter(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
+    void processBlockCombFilter(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
     void processBlockReapeater(juce::AudioBuffer<float>&, juce::MidiBuffer&,int line_no) ;
 
     float phasor_phase[2] = {0.0f,0.5f};
@@ -339,6 +344,14 @@ private:
     float fade_out_index_c[2] = {};
     int block_len ;
     float pitch_value = 0.5;
+    struct ReapeaterData
+    {
+        int bufferStart;
+        int bufferEnd;
+        int counter;
+        int circularStart;
+    }reapeaterData[numOfLine];
+   
     //==============================================================================
 
     

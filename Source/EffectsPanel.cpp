@@ -38,6 +38,9 @@ EffectPanel::EffectPanel(TugGlicentoAudioProcessor& p) : audioProcessor(p)
         pitchShifterPanel.add(new PitchShifterPanel(audioProcessor,i));
         distortionPanel.add(new DistortionPanel(audioProcessor,i));
         phaserPanel.add(new PhaserPanel(audioProcessor,i));
+        combFilterPanel.add(new CombFilterPanel(audioProcessor,i));
+        repeaterPanel.add(new RepeaterPanel(audioProcessor,i));
+        
         
         addAndMakeVisible(lineFilterPanel.getLast());
         addAndMakeVisible(reverbePanel.getLast());
@@ -48,6 +51,9 @@ EffectPanel::EffectPanel(TugGlicentoAudioProcessor& p) : audioProcessor(p)
         addAndMakeVisible(pitchShifterPanel.getLast());
         addAndMakeVisible(distortionPanel.getLast());
         addAndMakeVisible(phaserPanel.getLast());
+        addAndMakeVisible(combFilterPanel.getLast());
+        addAndMakeVisible(repeaterPanel.getLast());
+        
         
  
     }
@@ -133,6 +139,9 @@ void EffectPanel::resized()
         phaserPanel.getUnchecked(i)->setVisible(false);
         distortionPanel.getUnchecked(i)->setVisible(false);
         pitchShifterPanel.getUnchecked(i)->setVisible(false);
+        combFilterPanel.getUnchecked(i)->setVisible(false);
+        repeaterPanel.getUnchecked(i)->setVisible(false);
+        
         
     }
     lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
@@ -148,7 +157,10 @@ void EffectPanel::resized()
         if(audioProcessor.selectedEffect[i] == DISTORTION) x = distortionPanel.getUnchecked(i);
         if(audioProcessor.selectedEffect[i] == FLANGER) x = distortionPanel.getUnchecked(i);
         if(audioProcessor.selectedEffect[i] == PITCHSHIFTER) x = pitchShifterPanel.getUnchecked(i);
- 
+        if(audioProcessor.selectedEffect[i] == COMBFILTER) x = combFilterPanel.getUnchecked(i);
+        if(audioProcessor.selectedEffect[i] == REPEATER) x = repeaterPanel.getUnchecked(i);
+        
+        
         
         x->setBounds(area);
         x->setVisible(true);
