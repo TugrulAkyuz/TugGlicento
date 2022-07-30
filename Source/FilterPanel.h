@@ -87,6 +87,13 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
         //ds.drawForRectangle(g, r);
         g.setColour(Colours::black);
         g.fillRect(r);
+        ColourGradient cg(Colour::fromFloatRGBA(1.0f, 1.0f, 1.0f, 0.2f), getWidth()/2 , 0,
+                          Colour::fromFloatRGBA(0.0f, 0.0f, 0.0f, 0.2f), getWidth()/2,  (getHeight() ), true);
+        
+        g.setGradientFill(cg);
+        g.fillAll();
+        
+        
         g.setColour(juce::Colours::black);
         g.drawRect(r,2);
         
@@ -166,7 +173,7 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
         ds.drawForPath(g, p);
         
      
-        g.setColour (Colours::grey);
+        g.setColour (Colours::orange.withAlpha(0.6f));
         g.drawRoundedRectangle(area.toFloat(), 2.0f, 1.0f);
         
     }

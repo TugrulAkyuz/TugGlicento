@@ -210,8 +210,14 @@ void  FreqResPanel::paint (juce::Graphics& g)
     responseArea.reduce(1, 1);
     auto w =  responseArea.getWidth();
     g.setColour (Colours::black);
-    g.fillRect(responseArea);
-    g.setColour (Colours::grey);
+    //g.fillRect(responseArea);
+    ColourGradient cg(Colour::fromFloatRGBA(1.0f, 1.0f, 1.0f, 0.2f), getWidth()/2 , 0,
+                      Colour::fromFloatRGBA(0.0f, 0.0f, 0.0f, 0.2f), getWidth()/2,  (getHeight() ), true);
+    
+    g.setGradientFill(cg);
+    g.fillAll();
+    
+    g.setColour (Colours::orange.withAlpha(0.6f));
     g.drawRoundedRectangle(responseArea.toFloat(), 2.0f, 1.0f);
 
     int grid_x = 10;

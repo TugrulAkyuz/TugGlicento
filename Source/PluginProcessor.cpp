@@ -66,7 +66,7 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[EFFECT] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,effectChoicesStr,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,effectChoicesStr,1+j));
 
         
         tmp_s.clear();
@@ -83,17 +83,17 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[ATTACKNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,5,0.001));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,1,0.001));
         attackAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DECAYNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.01,5,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.01,1,0.65));
         decayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[SUSTAINNAME] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,1,0.9f));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.001,1,0.7f));
         sustainAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
@@ -114,12 +114,12 @@ valueTreeState(*this, &undoManager)
  
         tmp_s.clear();
         tmp_s << valueTreeNames[CHORUSRATE]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         chorusRateAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[CHORUSDEPTH]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.3));
         chorusdepthSAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
@@ -129,41 +129,41 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[CHORUSFEEDBACK]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         chorusFeedbackAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
        
         tmp_s.clear();
         tmp_s << valueTreeNames[CHORUSMIX]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         chorusMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
    
  
          tmp_s.clear();
          tmp_s << valueTreeNames[REVERBROOMSIZE]<<j;
-         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.3));
         reverbroomSizeAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
     
          tmp_s.clear();
          tmp_s << valueTreeNames[REVERBDAMPING]<<j;
-         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         reverbdampingAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
          tmp_s.clear();
          tmp_s << valueTreeNames[REVERBWETLEVEL]<<j;
-         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         reverbwetLevelAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         
          tmp_s.clear();
          tmp_s << valueTreeNames[REVERBDRYLEVEL]<<j;
-         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         reverbdryLevelAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         
          tmp_s.clear();
          tmp_s << valueTreeNames[REVERBWIDTH]<<j;
-         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+         valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         reverbwidthAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
       //DELAY
@@ -171,56 +171,56 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DELAYDREYWETDELAY]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         dreywetdelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
    
         tmp_s.clear();
         tmp_s << valueTreeNames[DELAYTIMEDELAY]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         timedelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
        
         tmp_s.clear();
         tmp_s << valueTreeNames[DELAYTIMEDELAYSYNC]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         timedelaysyncAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
        
        
         tmp_s.clear();
         tmp_s << valueTreeNames[DELAYFEEDBACKDELAY]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         feedbackdelayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
        
        
         tmp_s.clear();
         tmp_s << valueTreeNames[DELAYSYNC]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.5));
         delaysyncAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
     
         
         tmp_s.clear();
         tmp_s << valueTreeNames[PHASERDEPTH]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         phaserDepthAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[PHASERPEEDBAC]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,-1.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,-1.0,1.0,0.3));
         phaserPeedbacAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
        
         tmp_s.clear();
         tmp_s << valueTreeNames[PHASERMIX]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1.0,0.4));
         phaserMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[PHASERDECAY]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,1.0));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,3.0));
         phaserDecayAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[PHASERRATE]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,3));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,100.0,10));
         phaserRateAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         
@@ -232,17 +232,17 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DISTDRIVE]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,25,1.0));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,25,5.0));
         distDriveAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DISTMIX]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,3));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,0.5));
         distMixAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[DISTTRESHOLD]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,3));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0.0,1,0.5));
         distthresholdAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
@@ -267,12 +267,12 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[COBFILTERDELAY]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0,10,0));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,0,10,2));
         comFilterAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         tmp_s.clear();
         tmp_s << valueTreeNames[REPEATERDIVIDE]<<j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterInt>(tmp_s, tmp_s,1,16,1));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterInt>(tmp_s, tmp_s,1,64,1));
         repeaterDivideAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
         
         // PitchShifter
@@ -470,6 +470,9 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         reapeaterData[i].counter = -1;
         reapeaterData[i].bufferStart = -1;
         reapeaterData[i].bufferEnd = -1;
+        
+        rmsSmooth[i].reset(sampleRate,1.0/(2.5*samplesPerBlock));
+        playLine[i] = 1;
     }
     
 
@@ -681,11 +684,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
        
        
     }
-    for(int i =  0; i  < numOfLine ; i++)
-    {
 
-        processBlockFilter (buffer,  midiMessages, i);
-    }
     
     int i = 0;
     for(auto f : processFunctions)
@@ -701,7 +700,11 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         i++;
     }
     
+    for(int i =  0; i  < numOfLine ; i++)
+    {
 
+        processBlockFilter (buffer,  midiMessages, i);
+    }
         buffer.clear();
    
 //    for(auto i = 0 ; i < numOfLine ; i++)
@@ -720,11 +723,23 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             float* channelDatafrom = copyBuffer[l].getWritePointer (channel);
         
             for (int i = 0; i < copyBuffer[l].getNumSamples(); ++i) {
-                channelDatato[i] += channelDatafrom[i]*lineVolSmooth[l].getNextValue()/4;
+                channelDatafrom[i] =  playLine[l]*channelDatafrom[i]*lineVolSmooth[l].getNextValue();
+                channelDatato[i] += channelDatafrom[i];
             }
         }
     }
-    
+    for(auto l = 0 ; l < numOfLine ; l++)
+    {
+        auto ll =  copyBuffer[l].getRMSLevel(0, 0,  buffer.getNumSamples());
+        if(ll >  rmsValue[l])
+        {
+            rmsSmooth[l].setCurrentAndTargetValue(ll);
+            rmsSmooth[l].setTargetValue(0.0f);
+        }
+       
+        rmsValue[l] = rmsSmooth[l].getNextValue();
+       // rmsValue[l] = ll;
+    }
     // (this->*(processFunctions[0]))(buffer,midiMessages);
     
 }
@@ -978,13 +993,16 @@ void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float
 void TugGlicentoAudioProcessor::processBlockReapeater(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
     int write = pitchshiftVariables[line_no].mCicularBufferWriteHead;
+    float durSample =  4*(mySampleRate*60.0f/myBpm)/(*repeaterDivideAtomic[line_no]);
     for (auto i = 0; i < buffer.getNumSamples(); ++i)
     {
 
         if(i == reapeaterData[line_no].bufferStart)
         {
             reapeaterData[line_no].bufferStart = -1;
-            reapeaterData[line_no].counter = stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]);
+          //  reapeaterData[line_no].counter = stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]);
+              
+            reapeaterData[line_no].counter = durSample;
     
         }
         if(i == reapeaterData[line_no].bufferEnd)
@@ -996,7 +1014,8 @@ void TugGlicentoAudioProcessor::processBlockReapeater(juce::AudioBuffer<float>& 
         if(reapeaterData[line_no].counter == -1) continue;
         if(reapeaterData[line_no].counter == 0)
         {
-            int idx = pitchshiftVariables[line_no].mCicularBufferWriteHead - stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]) ;
+           // int idx = pitchshiftVariables[line_no].mCicularBufferWriteHead - stepmidStopSampleInterval[line_no]/(*repeaterDivideAtomic[line_no]) ;
+            int idx = pitchshiftVariables[line_no].mCicularBufferWriteHead - durSample ;
             if(idx < 0 ) idx = idx + pitchshiftVariables[line_no].mCircularBufferLenght;
             for (int channel = 0; channel < getNumInputChannels(); ++channel)
             {

@@ -66,3 +66,27 @@ void TugGlicentoAudioProcessorEditor::setLineForFilterPanel(int lineNo)
  
      effectPanel.setFilterPanel(lineNo);
 }
+
+void TugGlicentoAudioProcessorEditor::setSoloLine(int lineNo,bool state)
+{
+ 
+    soloLineVec[lineNo] = state;
+    int array [numOfLine] = {};
+    bool tmp_s =  false;
+    for(int i = 0 ; i < numOfLine  ; i++)
+    {
+        if(soloLineVec[i] == 0 ) continue;
+        array[i] = 1;
+        tmp_s = true;
+    }
+    if(tmp_s ==  true)
+    {
+        audioProcessor.setPlayLine(array);
+        return;
+    }
+    for(int i = 0 ; i < numOfLine  ; i++)
+       array[i] = 1;
+    audioProcessor.setPlayLine(array);
+    
+}
+

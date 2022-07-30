@@ -153,6 +153,11 @@ public:
         myFilter[0][line_no].setFilterMode2(index);
         myFilter[1][line_no].setFilterMode2(index);
     }
+    float getLineVolDB(int line_no)
+    {
+        return  rmsValue[line_no];
+    }
+    float rmsValue[numOfLine];
     
     bool myIsPlaying  = false;
     int steps[numOfLine] = {};
@@ -243,6 +248,13 @@ public:
         processFunctions.at(line_no) = myEffecrBankFunctions.at(fxIndex);
 
     }
+    void setPlayLine(int array [])
+    {
+        for(int i = 0 ; i < numOfLine  ; i++)
+           playLine[i] = array[i];
+    }
+    int playLine[numOfLine];
+    
     int selectedEffect[numOfLine] = {};
     dsp::ProcessorDuplicator<dsp::IIR::Filter<float>, dsp::IIR::Coefficients<float>> bandpassfilter[numOfLine];
     Filter myFilter[2][numOfLine];
@@ -308,6 +320,9 @@ private:
     AudioBuffer<float> copyBuffer [numOfLine];
     SmoothedValue<float> lineGainSmooth[numOfLine];
     SmoothedValue<float> lineVolSmooth[numOfLine];
+    
+    SmoothedValue<float> rmsSmooth[numOfLine];
+    
     int debugcounter = 0;
 
     filter_coeff_s  filter_coeff[numOfLine] = {0};

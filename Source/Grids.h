@@ -16,10 +16,74 @@
  
 #pragma once
 using namespace juce;
-
+enum  {
+    GETDURATION,
+    GETSPEED,
+    GETNUMOF
+};
 const Colour buttonsDefaultColours  (25,25,25);
 
+class Grids;
 
+class SubGrids: public juce::Component
+{
+public:
+    SubGrids(Grids& g) : ownerGrid(g)
+    {
+        
+    }
+    ~SubGrids()
+    {
+        
+    }
+    void  paint (juce::Graphics& g) override; 
+    void rP()
+    {
+        repaint();
+    }
+private:
+    
+  //  TugGlicentoAudioProcessor& audioProcessor;
+  Grids& ownerGrid;
+    
+};
+
+
+
+class SimpleVueMeter : public juce::Component,  public juce::Timer
+{
+public:
+    SimpleVueMeter(TugGlicentoAudioProcessor& p,int line)  : audioProcessor(p){
+        startTimer(20);
+        
+        myLine = line;
+        
+    }
+    ~SimpleVueMeter()
+    {
+        
+    }
+    void  paint (juce::Graphics& g) override
+    {
+        g.setColour (Colours::limegreen);
+        
+        auto  x = audioProcessor.getLineVolDB(myLine);
+        int  level = (int)jmap(x, 0.0f, 1.0f, 0.0f, (float)getHeight());
+
+        g.fillRect(0, getHeight() -level, getWidth(),level);
+    }
+    void resized() override
+    {
+        
+    }
+    void timerCallback()  override
+    {
+
+            repaint();
+    }
+    TugGlicentoAudioProcessor& audioProcessor;
+    int myLine;
+};
 
 const std::string midiNotes[]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
@@ -40,13 +104,40 @@ public:
     }
     
     void mouseDown (const MouseEvent& e) override;
-
+    
+    std::vector<int> getButtonsCoord()
+    {
+        std::vector<int> b;
+        for(int i = 0 ; i <  gridNumberSlider.getValue()  ; i++)
+        {
+            if(buttons[i]->getToggleState() == true)
+              b.push_back(buttons[i]->getX());
+        }
+        return b;
+        
+    }
+    int getParam(int type)
+    {
+        int x;
+        if(type== GETDURATION)
+            x = gridDurationCombo.getSelectedId();
+     
+        if(type==  GETSPEED)
+            x = gridSpeedCombo.getSelectedId();
+        
+        if(type==  GETNUMOF)
+            x = gridNumberSlider.getValue();
+        
+        return x;
+        
+    }
 private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
     juce::OwnedArray<juce::TextButton> buttons;
     CustomRoratySlider gridNumberSlider;
     CustomRoratySlider gridVolSlider;
+    SimpleVueMeter  simpleVueMeter;
     juce::ComboBox gridSpeedCombo;
     juce::ComboBox gridDurationCombo;
     juce::ComboBox gridEffectCombo;
@@ -55,6 +146,8 @@ private:
     juce::TextButton soloButton;
   
     juce::Label myLineLabel;
+    
+    SubGrids subGrids;
     
     bool dirt = false;
     int step;
@@ -94,8 +187,8 @@ private:
             soloButton.setColour(juce::TextButton::ColourIds::buttonColourId,Colours::lightgreen);
         }
     }
-    
-    bool stepArray [32];
+    Rectangle <int>  griidbounds;
+    bool stepArray [32] = {};
    juce::OwnedArray    <juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachmentArray;
     std::unique_ptr < AudioProcessorValueTreeState::ComboBoxAttachment>  comBoxSpeedAtaachment;
     std::unique_ptr < AudioProcessorValueTreeState::ComboBoxAttachment>  comBoxDurationAtaachment;
