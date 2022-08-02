@@ -278,7 +278,10 @@ valueTreeState(*this, &undoManager)
         // PitchShifter
 
 
-        
+        tmp_s.clear();
+        tmp_s << valueTreeNames[PITCHSLIDEVALUE]<<j;
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(tmp_s, tmp_s,-3,3,0.00f));
+        pitchSlideValueAtomic[j] = valueTreeState.getRawParameterValue(tmp_s);
  
          
         
@@ -473,6 +476,8 @@ void TugGlicentoAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         
         rmsSmooth[i].reset(sampleRate,1.0/(2.5*samplesPerBlock));
         playLine[i] = 1;
+        pitchSlideSmooth[i][0].reset(sampleRate,1000);
+        pitchSlideSmooth[i][1].reset(sampleRate,1000);
     }
     
 
@@ -549,10 +554,11 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         myFilter[0][i].setResonance(*qAtomic[i]);
         myFilter[1][i].setCutoff(*cutOffAtomic[i]/20000);
         myFilter[1][i].setResonance(*qAtomic[i]);
+         
         
         
     }
-    
+
     juce::AudioPlayHead::CurrentPositionInfo positionInfo;
     juce::AudioPlayHead* playHead = getPlayHead();
     if (playHead == nullptr) return;
@@ -648,6 +654,8 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 lineGainSmooth[i].setTargetValue(0.0f);
                 adsr[i].noteOff();
                 reapeaterData[i].bufferEnd = s;
+                pitchSlideSmooth[i][0].setCurrentAndTargetValue(0);
+                pitchSlideSmooth[i][1].setCurrentAndTargetValue(0);
             }
             if(stpSample[i] == 0)
             {
@@ -662,6 +670,11 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                     lineGainSmooth[i].setTargetValue(1.0f);
                     adsr[i].noteOn();
                     reapeaterData[i].bufferStart = s;
+                    currActiveGrid[i] = steps[i];
+                    pitchSlideSmooth[i][0].reset(mySampleRate, 1.0f/(0.01+*pitchSlideValueAtomic[i]**pitchSlideValueAtomic[i]));
+                    pitchSlideSmooth[i][1].reset(mySampleRate, 1.0f/(0.01+*pitchSlideValueAtomic[i]**pitchSlideValueAtomic[i]));
+                    pitchSlideSmooth[i][0].setTargetValue(*pitchSlideValueAtomic[i]);
+                    pitchSlideSmooth[i][1].setTargetValue(*pitchSlideValueAtomic[i]);
                 }
                 
             }
@@ -731,6 +744,7 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for(auto l = 0 ; l < numOfLine ; l++)
     {
         auto ll =  copyBuffer[l].getRMSLevel(0, 0,  buffer.getNumSamples());
+        if(ll > 10) return;
         if(ll >  rmsValue[l])
         {
             rmsSmooth[l].setCurrentAndTargetValue(ll);
@@ -738,9 +752,9 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         }
        
         rmsValue[l] = rmsSmooth[l].getNextValue();
-       // rmsValue[l] = ll;
+
     }
-    // (this->*(processFunctions[0]))(buffer,midiMessages);
+   
     
 }
 
@@ -945,10 +959,23 @@ void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float
    
  
    
-    if(*pitchValueAtomic[line_no] != 0)
+    if(*pitchValueAtomic[line_no] == 0.0f && *pitchSlideValueAtomic[line_no] == 0.0f)
+    {
+        for (auto i = 0; i < buffer.getNumSamples(); ++i)
+        for (int channel = 0; channel < getNumInputChannels(); ++channel)
+        {
+            int idx = (start_index + i)% pitchshiftVariables[line_no].mCircularBufferLenght;
+            copyBuffer[line_no].addSample(channel, i,pitchshiftVariables[line_no].mCircularBuffer[channel].at(idx) );
+        
+        }
+    }
+    else
     for(int w = 0 ; w < 2 ; w++)
         for (auto i = 0; i < buffer.getNumSamples(); ++i)
         {
+            auto p = *pitchValueAtomic[line_no] + pitchSlideSmooth[line_no][w].getNextValue();
+            phasorFreq = 1000*(1.0f-pow(2,p))/delayWindow;
+            
             double si = myPitchShifterPhasor[line_no]->getPhasorSample(phasorFreq,w);
             double cosvalue = (si - 0.5f)*M_PI;
             cosvalue = cos(cosvalue);
@@ -976,16 +1003,7 @@ void TugGlicentoAudioProcessor::processBlockPitchShifter(juce::AudioBuffer<float
             }
             
         }
-    else
-    {
-        for (auto i = 0; i < buffer.getNumSamples(); ++i)
-        for (int channel = 0; channel < getNumInputChannels(); ++channel)
-        {
-            int idx = (start_index + i)% pitchshiftVariables[line_no].mCircularBufferLenght;
-            copyBuffer[line_no].addSample(channel, i,pitchshiftVariables[line_no].mCircularBuffer[channel].at(idx) );
-        
-        }
-    }
+ 
 
     
     
@@ -1090,8 +1108,6 @@ void TugGlicentoAudioProcessor::processBlockCombFilter(juce::AudioBuffer<float>&
 }
 void TugGlicentoAudioProcessor::processBlockFilter (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages,int line_no)
 {
- 
- 
     int channel = 0;
     double main_freq = *cutOffAtomic[line_no]/20000;
     myFilter[0][line_no].setCutoff(main_freq);

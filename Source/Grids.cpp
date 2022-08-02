@@ -16,7 +16,7 @@
 
 Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , stepArrow("",
                                                                                    0.0f,
-                                                                                   juce::Colours::orange),simpleVueMeter(p, line),subGrids(*this)
+                                                                                   juce::Colours::orange),simpleVueMeter(p, line),myLine(line)
 {
     
     addAndMakeVisible(soloButton);
@@ -28,7 +28,9 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     addAndMakeVisible(gridVolSlider);
     addAndMakeVisible(gridEffectCombo);
     addAndMakeVisible(simpleVueMeter);
-    addAndMakeVisible(subGrids);
+    
+    subGrids =  std::make_unique<SubGrids>(*this,audioProcessor,myLine);
+    addAndMakeVisible(subGrids.get());
     
     
     gridNumberSlider.setInterceptsMouseClicks(true, false) ;
@@ -36,7 +38,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     gridDurationCombo.setColour(PopupMenu::backgroundColourId, Colours::blue);
     
     addMouseListener(this, true);
-    myLine = line;
+    
     step = 0;
     myLineLabel.setText(std::to_string(myLine + 1), juce::NotificationType::dontSendNotification);
     myLineLabel.setColour(juce::Label::ColourIds::textColourId, colourarray[myLine]);
@@ -97,7 +99,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
                 i++;
             }
             //resized();
-            subGrids.rP();
+            subGrids->rP();
         };
         tmp_s.clear();
         tmp_s << "block" << line << i;
@@ -131,7 +133,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
     gridNumberSlider.onValueChange = [this]()
     {
         resized();
-        subGrids.rP();
+        subGrids->rP();
     };
 
     startTimer(20);
@@ -219,7 +221,7 @@ void Grids::resized()
     myLineLabel.setBounds(area.removeFromLeft(25));
     soloButton.setBounds(area.removeFromLeft(40).reduced(10));
  
-    subGrids.setBounds(area.removeFromTop(4));
+    subGrids->setBounds(area.removeFromTop(4));
 
      griidbounds =  area.reduced(10, 0);
     griidbounds.removeFromBottom(2);
@@ -248,7 +250,7 @@ void Grids::resized()
         }
         else{
             buttons[i]->setVisible(true);
-            buttons[step]->setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::lightgrey.withAlpha(0.50f));
+            buttons[step]->setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::lightgrey.withAlpha(0.90f));
             buttons[step]->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::cyan.withAlpha(0.50f));
             buttons[step]->setButtonText(">");
             buttons[step]->setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::darkgrey);
@@ -310,10 +312,22 @@ void  SubGrids::paint (juce::Graphics& g)
     float  value2 = value*(xx)/coef1;
     g.setColour(juce::Colours::limegreen);
     
-    value2 = jmax((int)(getWidth()*value2) -2,1);
+    value2 = jmax((int)(getWidth()*value2),1);
     for ( int i = 0; i < x.size();i++)
     {
-        g.fillRect(x.at(i) - getX(), getHeight()-2, (int)value2 , 2);
+        g.setColour(juce::Colours::lightgreen.withAlpha(0.8f));
+        g.fillRect(x.at(i) - getX(), getHeight()-2, (int)value2 , 1);
+ 
+        g.setColour(juce::Colours::yellow);
+        g.drawLine(x.at(i) - getX()  , 0, x.at(i) - getX() , getHeight(), 1);
+    }
+    
+    if(ratio >= 0)
+    {
+        g.setColour(juce::Colours::yellow);
+        int c =  audioProcessor.getcurrActiveGrid(myLine);
+        
+        g.fillRect(ownerGrid.getParam(GETCOORDOFBUTTON,c) - getX(), getHeight()-3, (int)(value2*ratio) , 2);
     }
     
 }

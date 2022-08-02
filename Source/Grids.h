@@ -19,18 +19,19 @@ using namespace juce;
 enum  {
     GETDURATION,
     GETSPEED,
-    GETNUMOF
+    GETNUMOF,
+    GETCOORDOFBUTTON
 };
 const Colour buttonsDefaultColours  (25,25,25);
 
 class Grids;
 
-class SubGrids: public juce::Component
+class SubGrids: public juce::Component,   public juce::Timer
 {
 public:
-    SubGrids(Grids& g) : ownerGrid(g)
+    SubGrids(Grids& g, TugGlicentoAudioProcessor& p ,int line) : ownerGrid(g), audioProcessor(p),myLine(line)
     {
-        
+         startTimer(20);
     }
     ~SubGrids()
     {
@@ -41,11 +42,20 @@ public:
     {
         repaint();
     }
+    void timerCallback()  override
+    {
+       
+        ratio = audioProcessor.getGridContinousData(myLine);
+        //if(ratio == -1 ) return;
+        repaint();
+        
+    }
 private:
     
-  //  TugGlicentoAudioProcessor& audioProcessor;
+  TugGlicentoAudioProcessor& audioProcessor;
   Grids& ownerGrid;
-    
+    int myLine;
+    float ratio = 0;
 };
 
 
@@ -68,8 +78,9 @@ public:
         g.setColour (Colours::limegreen);
         
         auto  x = audioProcessor.getLineVolDB(myLine);
-        int  level = (int)jmap(x, 0.0f, 1.0f, 0.0f, (float)getHeight());
-
+       
+        int  level = (int)jmap(x, 0.0f, 1.0f, 0.0f, (float)getHeight() - 1);
+        if(level < 0 || level > getHeight() - 1) return;
         g.fillRect(0, getHeight() -level, getWidth(),level);
     }
     void resized() override
@@ -116,7 +127,7 @@ public:
         return b;
         
     }
-    int getParam(int type)
+    int getParam(int type, int index = -1)
     {
         int x;
         if(type== GETDURATION)
@@ -127,10 +138,12 @@ public:
         
         if(type==  GETNUMOF)
             x = gridNumberSlider.getValue();
-        
+        if(type==  GETCOORDOFBUTTON)
+            x = buttons[index]->getX();
         return x;
         
     }
+    int step;
 private:
     MyLookAndFeel myLookAndFeel;
     TugGlicentoAudioProcessor& audioProcessor;
@@ -147,10 +160,11 @@ private:
   
     juce::Label myLineLabel;
     
-    SubGrids subGrids;
+    std::unique_ptr  <SubGrids> subGrids;
+ 
     
     bool dirt = false;
-    int step;
+   
     int myLine;
     int myMidiNote;
     void timerCallback() override

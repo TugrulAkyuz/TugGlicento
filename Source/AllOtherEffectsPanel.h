@@ -170,7 +170,9 @@ private:
     TugGlicentoAudioProcessor& audioProcessor;
 
     CustomRoratySlider pitchSlider;
+    CustomRoratySlider pitchSlideSlider;
     std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> pitchSliderAttachment;
+    std::unique_ptr  <AudioProcessorValueTreeState::SliderAttachment> pitchSlideSliderAttachment;
     
 
     Label effectLabel;

@@ -19,6 +19,17 @@ using namespace juce;
 //    }
 //}
 
+void drawHeaderPanel(Graphics &g, Label &l)
+{
+    int x = 4;
+    
+    g.setColour (juce::Colours::white);
+    g.drawRoundedRectangle(l.getBounds().reduced(x, 2).toFloat(), 1.0f, 0.3f);
+    g.setColour (juce::Colours::black.withAlpha(0.1f));
+    g.fillRect(l.getBounds().reduced(x+2, 4));
+    
+}
+
 FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no),freqResPanel(p,line_no),curvePanel(p,line_no)
 {
     addAndMakeVisible(cutofSlider);
@@ -142,6 +153,13 @@ void  FilterPanel::paint (juce::Graphics& g)
     auto bounds = getLocalBounds().toFloat().reduced(2, 2);
     
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
+    
+    drawHeaderPanel(g,effectLabel);
+    
+//    g.setColour (juce::Colours::darkgrey);
+//    g.drawRoundedRectangle(effectLabel.getBounds().reduced(0, 5).toFloat(), 1.0f, 1.0f);
+//    g.setColour (juce::Colours::darkgrey.withAlpha(0.1f));
+//    g.fillRect(effectLabel.getBounds().reduced(0, 4));
     
     
     

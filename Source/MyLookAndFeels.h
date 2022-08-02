@@ -13,16 +13,17 @@ using namespace juce;
 #include "../JuceLibraryCode/JuceHeader.h"
 #pragma once
 
+#define COLOUR_ALPHA 0.7f
 
 const juce::Colour colourarray [] = {
-    juce::Colours::red,
-    juce::Colours::lightgreen,
-    juce::Colours::yellow,
-    juce::Colours::magenta,
-    juce::Colours::lightblue,
-    juce::Colours::lightblue,
-    juce::Colours::lightblue,
-    juce::Colours::lightblue
+    juce::Colours::red.withAlpha(COLOUR_ALPHA),
+    juce::Colours::lightgreen.withAlpha(COLOUR_ALPHA),
+    juce::Colours::yellow.withAlpha(COLOUR_ALPHA),
+    juce::Colours::magenta.withAlpha(COLOUR_ALPHA),
+    juce::Colours::lightblue.withAlpha(COLOUR_ALPHA),
+    juce::Colours::lightblue.withAlpha(COLOUR_ALPHA),
+    juce::Colours::lightblue.withAlpha(COLOUR_ALPHA),
+    juce::Colours::lightblue.withAlpha(COLOUR_ALPHA)
     
 };
 

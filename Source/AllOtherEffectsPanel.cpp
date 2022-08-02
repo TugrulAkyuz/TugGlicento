@@ -10,6 +10,7 @@
 
 #include "AllOtherEffectsPanel.h"
 
+extern void  drawHeaderPanel(Graphics &g,Label &l);
 
 ReverbePanel::ReverbePanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
@@ -80,7 +81,7 @@ void  ReverbePanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -178,7 +179,7 @@ void  DelayPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -269,7 +270,7 @@ void  ChorusPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -336,7 +337,7 @@ void  DecimatorPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -360,6 +361,7 @@ void DecimatorPanel::resized()
 PitchShifterPanel::PitchShifterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
     addAndMakeVisible(pitchSlider);
+    addAndMakeVisible(pitchSlideSlider);
 
 
     juce::String  tmp_s;
@@ -367,6 +369,9 @@ PitchShifterPanel::PitchShifterPanel(TugGlicentoAudioProcessor& p ,int line_no) 
     tmp_s.clear();
     tmp_s << valueTreeNames[PITCHVALUE]<<myLine;
     pitchSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, pitchSlider);
+    tmp_s.clear();
+    tmp_s << valueTreeNames[PITCHSLIDEVALUE]<<myLine;
+    pitchSlideSliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, pitchSlideSlider);
     
     addAndMakeVisible(effectLabel);
     String l;
@@ -392,7 +397,7 @@ void  PitchShifterPanel::paint (juce::Graphics& g)
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
     
-    
+    drawHeaderPanel(g,effectLabel);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
 void PitchShifterPanel::resized()
@@ -402,7 +407,9 @@ void PitchShifterPanel::resized()
     allArea.reduce(10, 0);
     auto h =  allArea.getHeight()/4;
     auto area = allArea.removeFromTop( h);
-    pitchSlider.setBounds(area.removeFromLeft(allArea.getWidth()));
+    pitchSlider.setBounds(area);
+    pitchSlideSlider.setBounds(allArea.removeFromTop(h));
+    
 
  
 
@@ -484,7 +491,7 @@ void  DistortionPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -575,7 +582,7 @@ void  PhaserPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -632,7 +639,7 @@ void  CombFilterPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }
@@ -658,6 +665,7 @@ RepeaterPanel::RepeaterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioP
     tmp_s << valueTreeNames[REPEATERDIVIDE]<<myLine;
     repeaterDividerliderAttachment =  std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.valueTreeState, tmp_s, repeaterDividerlider);
     
+    
     addAndMakeVisible(effectLabel);
     String l;
     l << "REPEATER " << myLine + 1;
@@ -680,7 +688,7 @@ void  RepeaterPanel::paint (juce::Graphics& g)
     g.drawRoundedRectangle(bounds, 3.0f, 1.0f);
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
     
-    
+    drawHeaderPanel(g,effectLabel);
     
   //  g.fillAll ( ColorScheme::getSliderBorderColor());
 }

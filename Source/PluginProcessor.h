@@ -66,7 +66,7 @@ enum valueTreeNamesEnum
     BLOCK,SPEEED,DUR,GRIDNUM,LINEVOL,EFFECT,GLOBALRESTBAR,CUTOFF,Q,ATTACKNAME,DECAYNAME,SUSTAINNAME,RELEASENAME,ENVNAME,FILTERTYPE,
     CHORUSRATE,CHORUSDEPTH,CHORUSDELAY,CHORUSFEEDBACK,CHORUSMIX,REVERBROOMSIZE,REVERBDAMPING,REVERBWETLEVEL,REVERBDRYLEVEL,REVERBWIDTH,
     DELAYDREYWETDELAY,DELAYTIMEDELAY,DELAYTIMEDELAYSYNC,DELAYFEEDBACKDELAY,DELAYSYNC,PHASERDEPTH,PHASERPEEDBAC,PHASERMIX,PHASERDECAY,PHASERRATE,
-    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME,PITCHVALUE,RATEDECIMATOR,BITDECIMATOR,COBFILTERDELAY,REPEATERDIVIDE
+    DISTMODE,DISTDRIVE,DISTMIX,DISTTRESHOLD,DENEME,PITCHVALUE,RATEDECIMATOR,BITDECIMATOR,COBFILTERDELAY,REPEATERDIVIDE,PITCHSLIDEVALUE
 };
 enum processFunctionEnum
 {
@@ -96,7 +96,7 @@ struct filter_coeff_s
 
 const juce::StringArray valueTreeNames =
 {
-    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME","PITCHVALUE","RATEDECIMATOR","BITDECIMATOR","COBFILTERDELAY","REPEATERDIVIDE"};
+    "block","Speed","Dur","GridNum","LineVol","EFFECT","GlobalRestncBar","CutOff","Q","ATTACKNAME","DECAYNAME","SUSTAINNAME","RELEASENAME","ENVNAME","FILTERTYPE","CHORUSRATE","CHORUSDEPTH","CHORUSDELAY","CHORUSFEEDBACK","CHORUSMIX","REVERBROOMSIZE","REVERBDAMPING","REVERBWETLEVEL","REVERBDRYLEVEL","REVERBWIDTH","DELAYDREYWETDELAY","DELAYTIMEDELAY","DELAYTIMEDELAYSYNC","DELAYFEEDBACKDELAY","DELAYSYNC","PHASERDEPTH","PHASERPEEDBAC","PHASERMIX","PHASERDECAY","PHASERRATE","DISTMODE","DISTDRIVE","DISTMIX","DISTTRESHOLD","DENEME","PITCHVALUE","RATEDECIMATOR","BITDECIMATOR","COBFILTERDELAY","REPEATERDIVIDE","PITCHSLIDEVALUE"};
 //==============================================================================
 /**
 */
@@ -157,7 +157,7 @@ public:
     {
         return  rmsValue[line_no];
     }
-    float rmsValue[numOfLine];
+    float rmsValue[numOfLine] = {};
     
     bool myIsPlaying  = false;
     int steps[numOfLine] = {};
@@ -221,6 +221,8 @@ public:
     
     std::atomic<float> *pitchValueAtomic[numOfLine];
     
+    std::atomic<float> *pitchSlideValueAtomic[numOfLine];
+    
     std::unique_ptr<AudioParameterInt *>  deneme[numOfLine];
     juce::AudioParameterBool* pitchShifterformatAtomic[numOfLine];
     
@@ -258,6 +260,20 @@ public:
     int selectedEffect[numOfLine] = {};
     dsp::ProcessorDuplicator<dsp::IIR::Filter<float>, dsp::IIR::Coefficients<float>> bandpassfilter[numOfLine];
     Filter myFilter[2][numOfLine];
+    float getGridContinousData(int line)
+    {
+//         if(*gridsArr[line][steps[ line]] == 0)
+//           return -1;
+       // DBG( stepmidStopSampleCounter[line]);
+        if (myIsPlaying == false) return -1;
+        return stepmidStopSampleCounter[line]*1.0f/stepmidStopSampleInterval[line];
+
+    }
+
+    int getcurrActiveGrid(int line)
+    {
+        return currActiveGrid[line];
+    }
 private:
     juce::UndoManager undoManager;
     float myBpm;
@@ -346,8 +362,9 @@ private:
         int mCicularBufferWriteHead;
         int mCircularBufferLenght;
         
-        
     }pitchshiftVariables[numOfLine];
+    
+    SmoothedValue<float> pitchSlideSmooth[numOfLine][2];
     
     double linearInterpol(float v0, float v1, float t)
     {
@@ -366,7 +383,7 @@ private:
         int counter;
         int circularStart;
     }reapeaterData[numOfLine];
-   
+    int currActiveGrid[numOfLine] = {};
     //==============================================================================
 
     
