@@ -57,7 +57,7 @@ EffectPanel::EffectPanel(TugGlicentoAudioProcessor& p) : audioProcessor(p)
         
  
     }
- 
+    selectedlineFilterPanel = 0;
 }
 
 EffectPanel::~EffectPanel()
@@ -72,63 +72,12 @@ void  EffectPanel::paint (juce::Graphics& g)
 }
 void EffectPanel::resized()
 {
-/*
-    for(auto i =  0; i < numOfLine ; i++ )
-    {
-        auto allArea =  getLocalBounds();
-        auto area = allArea.removeFromLeft(100);
-        lineFilterPanel.getUnchecked(i)->setBounds(area);
-        lineFilterPanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        reverbePanel.getUnchecked(i)->setBounds(area);
-        reverbePanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        delayPanel.getUnchecked(i)->setBounds(area);
-        delayPanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        chorusPanel.getUnchecked(i)->setBounds(area);
-        chorusPanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        decimatorPanel.getUnchecked(i)->setBounds(area);
-        decimatorPanel.getUnchecked(i)->setVisible(false);
- 
-        area = allArea.removeFromLeft(100);
-        pitchShifterPanel.getUnchecked(i)->setBounds(area);
-        pitchShifterPanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        distortionPanel.getUnchecked(i)->setBounds(area);
-        distortionPanel.getUnchecked(i)->setVisible(false);
-        area = allArea.removeFromLeft(100);
-        phaserPanel.getUnchecked(i)->setBounds(area);
-        phaserPanel.getUnchecked(i)->setVisible(false);
-        
 
-    }
- */
-
-   /*
-    lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == REVERB)
-       reverbePanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == DELAY)
-        delayPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == CHORUS)
-       chorusPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == DECIMATOR)
-      decimatorPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    
-    pitchShifterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == DISTORTION)
-        distortionPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    if(audioProcessor.selectedEffect[selectedlineFilterPanel] == PHASER)
-       phaserPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
-    
- */
     auto allArea =  getLocalBounds();
     auto area = allArea.removeFromLeft(300);
     for(auto i =  0; i < numOfLine ; i++ )
     {
-        lineFilterPanel.getUnchecked(i)->setBounds(area);
+        
         lineFilterPanel.getUnchecked(i)->setVisible(false);
          
        
@@ -144,22 +93,32 @@ void EffectPanel::resized()
         
         
     }
+    lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setBounds(area);
     lineFilterPanel.getUnchecked(selectedlineFilterPanel)->setVisible(true);
     Component *x ;
     for(auto i =  0; i < numOfLine ; i++ )
     {
         area = allArea.removeFromLeft(100);
-        if(audioProcessor.selectedEffect[i] == REVERB) x = reverbePanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == DELAY) x = delayPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == CHORUS) x = chorusPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == DECIMATOR) x = decimatorPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == PHASER) x = phaserPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == DISTORTION) x = distortionPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == FLANGER) x = distortionPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == PITCHSHIFTER) x = pitchShifterPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == COMBFILTER) x = combFilterPanel.getUnchecked(i);
-        if(audioProcessor.selectedEffect[i] == REPEATER) x = repeaterPanel.getUnchecked(i);
         
+        juce::String  tmp_s;
+        tmp_s << valueTreeNames[EFFECT] << i;
+        
+        juce::AudioParameterChoice* xx = dynamic_cast<juce::AudioParameterChoice*>(audioProcessor.valueTreeState.getParameter(tmp_s));
+       // auto xx = audioProcessor.valueTreeState.getParameter(tmp_s)->convertTo0to1(float v)
+        auto xxx = xx->getIndex();
+        if(xxx == REVERB) x = reverbePanel.getUnchecked(i);
+        if(xxx == DELAY) x = delayPanel.getUnchecked(i);
+        if(xxx == CHORUS) x = chorusPanel.getUnchecked(i);
+        if(xxx  == DECIMATOR) x = decimatorPanel.getUnchecked(i);
+        if(xxx  == PHASER) x = phaserPanel.getUnchecked(i);
+        if(xxx  == DISTORTION) x = distortionPanel.getUnchecked(i);
+        if(xxx  == FLANGER) x = distortionPanel.getUnchecked(i);
+        if(xxx  == PITCHSHIFTER) x = pitchShifterPanel.getUnchecked(i);
+        if(xxx  == COMBFILTER) x = combFilterPanel.getUnchecked(i);
+        if(xxx  == REPEATER) x = repeaterPanel.getUnchecked(i);
+        
+        
+
         
         
         x->setBounds(area);

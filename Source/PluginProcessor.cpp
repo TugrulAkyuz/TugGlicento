@@ -66,7 +66,7 @@ valueTreeState(*this, &undoManager)
         
         tmp_s.clear();
         tmp_s << valueTreeNames[EFFECT] << j;
-        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,effectChoicesStr,1+j));
+        valueTreeState.createAndAddParameter(std::make_unique<juce::AudioParameterChoice>(tmp_s, tmp_s,effectChoicesStr,j));
 
         
         tmp_s.clear();

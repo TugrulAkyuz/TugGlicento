@@ -151,7 +151,7 @@ Grids::Grids(TugGlicentoAudioProcessor& p,int line)  : audioProcessor (p) , step
         
     };
      
-    gridEffectCombo.setSelectedId(*audioProcessor.valueTreeState.getRawParameterValue(tmp_s));
+   // gridEffectCombo.setSelectedId(*audioProcessor.valueTreeState.getRawParameterValue(tmp_s));
     
     soloButton.setClickingTogglesState(true);
     soloButton.setColour(TextButton::ColourIds::buttonColourId, Colours::transparentBlack );
