@@ -120,17 +120,17 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
     tmp_s << valueTreeNames[FILTERTYPE]<<myLine;
     fTypeAttachment =  std::make_unique <AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.valueTreeState, tmp_s, filterTypeCombo);
     
-    const auto& params = audioProcessor.getParameters();
+     auto& params = audioProcessor.getParameters();
 
     
     for( auto param : params )
     {
         auto x = param->getName(1000);
-        if(x ==  String (valueTreeNames[ATTACKNAME] + String(line_no))
-           || x ==  String (valueTreeNames[DECAYNAME] + String(line_no))
-           || x ==  String (valueTreeNames[SUSTAINNAME] + String(line_no))
-           || x ==  String (valueTreeNames[RELEASENAME] + String(line_no))
-           || x ==  String (valueTreeNames[FILTERTYPE] + String(line_no)))
+        if(x ==  String (valueTreeNames[ATTACKNAME] + String(myLine))
+           || x ==  String (valueTreeNames[DECAYNAME] + String(myLine))
+           || x ==  String (valueTreeNames[SUSTAINNAME] + String(myLine))
+           || x ==  String (valueTreeNames[RELEASENAME] + String(myLine))
+           || x ==  String (valueTreeNames[FILTERTYPE] + String(myLine)))
             param->addListener(this);
     }
  
@@ -141,6 +141,18 @@ FilterPanel::FilterPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProce
 
 FilterPanel::~FilterPanel()
 {
+    auto& params = audioProcessor.getParameters();
+
+    for( auto param : params )
+    {
+        auto x = param->getName(1000);
+        if(x ==  String (valueTreeNames[ATTACKNAME] + String(myLine))
+           || x ==  String (valueTreeNames[DECAYNAME] + String(myLine))
+           || x ==  String (valueTreeNames[SUSTAINNAME] + String(myLine))
+           || x ==  String (valueTreeNames[RELEASENAME] + String(myLine))
+           || x ==  String (valueTreeNames[FILTERTYPE] + String(myLine)))
+            param->removeListener(this);
+    }
     
 }
 void  FilterPanel::paint (juce::Graphics& g)
@@ -202,7 +214,7 @@ void FilterPanel::resized()
 
 FreqResPanel::FreqResPanel(TugGlicentoAudioProcessor& p ,int line_no) : audioProcessor(p) , myLine(line_no)
 {
-    const auto& params = audioProcessor.getParameters();
+     auto& params = audioProcessor.getParameters();
     String n;
     n << valueTreeNames[CUTOFF] << myLine;
     

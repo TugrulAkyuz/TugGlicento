@@ -10,7 +10,7 @@
 #include "Grids.h"
 #include "EffectsPanel.h"
 #include "PluginEditor.h"
-
+#include <math.h>
 double linearInterpol(float v0, float v1, float t)
 {
     
@@ -673,8 +673,8 @@ void TugGlicentoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                     currActiveGrid[i] = steps[i];
                     pitchSlideSmooth[i][0].reset(mySampleRate, 1.0f/(0.01+*pitchSlideValueAtomic[i]**pitchSlideValueAtomic[i]));
                     pitchSlideSmooth[i][1].reset(mySampleRate, 1.0f/(0.01+*pitchSlideValueAtomic[i]**pitchSlideValueAtomic[i]));
-                    pitchSlideSmooth[i][0].setTargetValue(*pitchSlideValueAtomic[i]);
-                    pitchSlideSmooth[i][1].setTargetValue(*pitchSlideValueAtomic[i]);
+                    pitchSlideSmooth[i][0].setTargetValue(*pitchSlideValueAtomic[i]*2);
+                    pitchSlideSmooth[i][1].setTargetValue(*pitchSlideValueAtomic[i]*2);
                 }
                 
             }

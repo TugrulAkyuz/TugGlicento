@@ -31,23 +31,40 @@ class CurvePanel : public juce::Component , juce::Timer, AudioProcessorParameter
         myline = line_no;
 
         
-        const auto& params = audioProcessor.getParameters();
+         auto& params = audioProcessor.getParameters();
     
         
         for( auto param : params )
         {
             auto x = param->getName(1000);
-            if(x ==  String (valueTreeNames[ATTACKNAME] + String(line_no))
-               || x ==  String (valueTreeNames[DECAYNAME] + String(line_no))
-               || x ==  String (valueTreeNames[SUSTAINNAME] + String(line_no))
-               || x ==  String (valueTreeNames[RELEASENAME] + String(line_no)))
+            if(x ==  String (valueTreeNames[ATTACKNAME] + String(myline))
+               || x ==  String (valueTreeNames[DECAYNAME] + String(myline))
+               || x ==  String (valueTreeNames[SUSTAINNAME] + String(myline))
+               || x ==  String (valueTreeNames[RELEASENAME] + String(myline)))
+            {
                 param->addListener(this);
+            }
         }
            
         
         startTimer(50);
         
     
+    }
+    ~CurvePanel()
+    {
+        auto& params = audioProcessor.getParameters();
+        for( auto param : params )
+        {
+            auto x = param->getName(1000);
+            if(x ==  String (valueTreeNames[ATTACKNAME] + String(myline))
+               || x ==  String (valueTreeNames[DECAYNAME] + String(myline))
+               || x ==  String (valueTreeNames[SUSTAINNAME] + String(myline))
+               || x ==  String (valueTreeNames[RELEASENAME] + String(myline)))
+            {
+                param->removeListener(this);
+            }
+        }
     }
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
@@ -272,7 +289,17 @@ public:
    
     ~FreqResPanel()
     {
+        auto& params = audioProcessor.getParameters();
+       String n;
+       n << valueTreeNames[CUTOFF] << myLine;
        
+       for( auto param : params )
+       {
+           auto x = param->getName(1000);
+           if(x ==  String (valueTreeNames[CUTOFF] + String(myLine))
+              || x ==  String (valueTreeNames[Q] + String(myLine)))
+               param->removeListener(this);
+       }
     };
     void timerCallback() override
     {
@@ -299,7 +326,7 @@ private:
 
 
 
-class FilterPanel : public Component,AudioProcessorParameter::Listener
+class FilterPanel : public Component , AudioProcessorParameter::Listener
 {
 public:
     FilterPanel(TugGlicentoAudioProcessor& p , int line_no);
